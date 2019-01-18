@@ -26,8 +26,8 @@ class ExcelApp : public Ole {
 		ExcelWorkbook Workbooks(int index); //Allow to retrieve workbook by is index 
 		ExcelWorkbook Workbooks(Upp::String name); //Allow to retrieve workbook by is name
 		
-		bool StartApplication(); //Start new Excel Application
-		bool CloseApplication(); //Close current Excel Application
+		bool Start(); //Start new Excel Application
+		bool Quit(); //Close current Excel Application
 		
 		bool FindApplication(); //Find First current Excel Application still openned
 		

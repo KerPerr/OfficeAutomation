@@ -24,7 +24,7 @@ class Ole {
 		const Upp::WString WS_InternetExplorerApp = L"InternetExplorer.Application"; //MS IE
 		const Upp::WString WS_ProdApp = L"InternetExplorer.Application"; // this one is to use in my context, you'r supposed to never use it :p
 		
-		virtual VARIANT Start(const Upp::WString appName); 
+		virtual VARIANT StartApp(const Upp::WString appName); 
 		virtual HRESULT AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, int cArgs...);//Allow code execution on whatever object 
 		virtual Upp::String BSTRtoString (BSTR bstr); //Converting VARIANT.BSTR to Upp::String
 		virtual void IndToStr(int row,int col,char* strResult);//translating row and column number into the string name of the cell.

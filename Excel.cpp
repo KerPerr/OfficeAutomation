@@ -21,9 +21,9 @@ ExcelApp::~ExcelApp(){
 	CoUninitialize();
 }
 
-bool ExcelApp::StartApplication() //Start new Excel Application
+bool ExcelApp::Start() //Start new Excel Application
 {
-	this->AppObj = this->Start(WS_ExcelApp);
+	this->AppObj = this->StartApp(WS_ExcelApp);
 	if( this->AppObj.intVal != -1){
 		this->ExcelIsStarted=true;
 		return true;
@@ -31,7 +31,7 @@ bool ExcelApp::StartApplication() //Start new Excel Application
 	return false;
 }
 
-bool ExcelApp::CloseApplication() //Close current Excel Application
+bool ExcelApp::Quit() //Close current Excel Application
 {
 	try{
 		this->ExecuteMethode("Quit",0);	

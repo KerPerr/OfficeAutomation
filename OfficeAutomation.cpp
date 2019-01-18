@@ -137,7 +137,7 @@ void Ole::IndToStr(int row,int col,char* strResult) {
     }
 }
 
-VARIANT Ole::Start(const Upp::WString appName){
+VARIANT Ole::StartApp(const Upp::WString appName){
 	CLSID clsApp;
 	VARIANT App = {0}; //Variant who's contain the app, have -1 into App.intVal if something went wrong
 	
