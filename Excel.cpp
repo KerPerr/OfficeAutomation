@@ -132,12 +132,46 @@ bool ExcelApp::FindApplication(){
 	return false;
 }
 
-bool ExcelApp::NewWorkbook(){
+ExcelWorkbook* ExcelApp::NewWorkbook(){
 	if(this->ExcelIsStarted){
-		GetAttribute(GetAttribute("Workbooks"),"Add");
-		return true;
+		return &workbooks.Add(ExcelWorkbook(*this,GetAttribute(GetAttribute("Workbooks"),"Add")));
 	}
-	return false;
+	return NULL;
+}
+
+ExcelWorkbook* ExcelApp::Workbooks(int index){
+	if(this->ExcelIsStarted && workbooks.GetCount() > index){
+		return &workbooks[index];
+	}
+	return NULL;
+}
+
+int ExcelApp::GetNumberOfWorkbook(){
+	return workbooks.GetCount();
+}
+
+ExcelWorkbook* ExcelApp::Workbooks(Upp::String name){
+	if(this->ExcelIsStarted){
+		for(int i = 0; i< workbooks.GetCount(); i++){
+			if (BSTRtoString(workbooks[i].GetAttribute("Name").bstrVal).Compare(name) ==0){
+				return &workbooks[i];
+			}
+		}
+	}
+	return NULL;
+}
+
+ExcelWorkbook* ExcelApp::OpenWorkbook(Upp::String name){
+  	if( !FileExists(name.ToStd().c_str())) {
+      return NULL;
+    }
+    return &workbooks.Add(ExcelWorkbook(*this,ExecuteMethode(GetAttribute(L"Workbooks"),L"Open",1,AllocateString(name))));
+}
+
+
+ExcelWorkbook::ExcelWorkbook(ExcelApp& myApp, VARIANT appObj){
+	this->AppObj = appObj;
+	this->parent = &myApp;
 }
 
 ExcelWorkbook::~ExcelWorkbook(){

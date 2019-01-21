@@ -14,7 +14,7 @@ class ExcelWorkbook; //Class represents Excel Workbook
 class ExcelSheet; //Class represents an Excel WorkSheet
 class ExcelRange; //Class represents an Excel Range
 
-class ExcelApp : public Ole {
+class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 	private: 
 		bool ExcelIsStarted; //Bool to know if we started Excel
 		Upp::Vector<ExcelWorkbook> workbooks; //Vector of every workbook
@@ -23,8 +23,8 @@ class ExcelApp : public Ole {
 		ExcelApp(); //Initialise COM
 		~ExcelApp(); //Unitialise COM
 		
-		ExcelWorkbook Workbooks(int index); //Allow to retrieve workbook by is index 
-		ExcelWorkbook Workbooks(Upp::String name); //Allow to retrieve workbook by is name
+		ExcelWorkbook* Workbooks(int index); //Allow to retrieve workbook by is index 
+		ExcelWorkbook* Workbooks(Upp::String name); //Allow to retrieve workbook by is name
 		
 		bool Start(); //Start new Excel Applicatio
 		bool FindOrStart(); //Find running Excel or Start new One
@@ -34,22 +34,23 @@ class ExcelApp : public Ole {
 		
 		bool SetVisible(bool set); //Set or not the application visible 
 		
-		bool NewWorkbook(); //Create new Workbook and add it to actual excel Running method
-		bool OpenWorkbook(Upp::String FilePath); //Find and Open Workbook by FilePath
+		ExcelWorkbook* NewWorkbook(); //Create new Workbook and add it to actual excel Running method
+		ExcelWorkbook* OpenWorkbook(Upp::String FilePath); //Find and Open Workbook by FilePath
 		
 		int GetNumberOfWorkbook(); //Return number of workbook currently openned on this excel App
 	
 };
 
-class ExcelWorkbook : public Upp::Moveable<ExcelWorkbook>, public Ole {
+class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 	private:
 		ExcelApp* parent; //Pointer to excelApp
 		Upp::Vector<ExcelSheet> sheets; //Vector of every Worksheets
 		bool isOpenned; //This bool must be useless But I prefere to have in case of object is still present in memory by a missing unreferenced pointer
-		
 	public:
-		ExcelWorkbook(ExcelApp &parent,VARIANT AppObj);
 		~ExcelWorkbook();
+		ExcelWorkbook(ExcelWorkbook&&) = default; //Copy constructor
+		ExcelWorkbook& operator=(ExcelWorkbook&&) = default; //moveable operator
+		ExcelWorkbook(ExcelApp &parent,VARIANT AppObj); //Constructor basic
 		
 		ExcelSheet Sheets(int index);//Allow to retrieve worksheet by is index 
 		ExcelSheet Sheets(Upp::String name);//Allow to retrieve worksheet by is name
@@ -64,13 +65,12 @@ class ExcelWorkbook : public Upp::Moveable<ExcelWorkbook>, public Ole {
 		bool Close(); //Close current workbook
 };
 
-class ExcelSheet :public Upp::Moveable<ExcelSheet>, public Ole  {
+class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 	private:
-		ExcelWorkbook* parent;//Pointer to excelworkbook
+	//	ExcelWorkbook* parent;//Pointer to excelworkbook
 	public:
 		ExcelSheet(ExcelWorkbook &parent,VARIANT AppObj);
 		~ExcelSheet();
-		
 		ExcelRange Range(Upp::String range); //Return a Range
 		ExcelRange Cells(int ligne, int colonne); //Return a Cells
 		
