@@ -165,20 +165,166 @@ ExcelWorkbook* ExcelApp::OpenWorkbook(Upp::String name){
   	if( !FileExists(name.ToStd().c_str())) {
       return NULL;
     }
-    return &workbooks.Add(ExcelWorkbook(*this,ExecuteMethode(GetAttribute(L"Workbooks"),L"Open",1,AllocateString(name))));
+    ExcelWorkbook* myExcel=  &workbooks.Add(ExcelWorkbook(*this,ExecuteMethode(GetAttribute(L"Workbooks"),L"Open",1,AllocateString(name))));
+    myExcel->ResolveSheet();
+    return myExcel;
+}
+
+bool ExcelWorkbook::ResolveSheet(){
+	int nbrSheet = this->GetAttribute( this->GetAttribute("Sheets"),"Count").intVal;
+	for(int i = 0; i < nbrSheet; i++){
+		sheets.Add(ExcelSheet(*this, this->GetAttribute("Sheets",1,AllocateInt(i +1))));
+	}
+	return true;
 }
 
 
 ExcelWorkbook::ExcelWorkbook(ExcelApp& myApp, VARIANT appObj){
 	this->AppObj = appObj;
 	this->parent = &myApp;
+	this->isOpenned = true;
+}
+
+ExcelSheet* ExcelWorkbook::Sheets(int index){
+	if(this->isOpenned && sheets.GetCount() > index){
+		return &sheets[index];
+	}
+	return NULL;
+}
+
+ExcelSheet* ExcelWorkbook::Sheets(Upp::String name){
+	if(this->isOpenned){
+		for(int i = 0; i< sheets.GetCount(); i++){
+			if (BSTRtoString(sheets[i].GetAttribute("Name").bstrVal).Compare(name) ==0){
+				return &sheets[i];
+			}
+		}
+	}
+	return NULL;
+}
+
+ExcelSheet* ExcelWorkbook::AddSheet(){ //Create new Sheet with default Name
+	if(this->isOpenned){
+		return &sheets.Add(ExcelSheet(*this,GetAttribute(GetAttribute("Sheets"),"Add")));
+	}
+	return NULL;
+}
+
+
+ExcelSheet* ExcelWorkbook::AddSheet(Upp::String sheetName){ //Create new Sheet with defined name 
+	if(this->isOpenned){
+		ExcelSheet* mySheet;
+		try{			
+			mySheet = (&this->sheets.Add(ExcelSheet(*this,GetAttribute(GetAttribute("Sheets"),"Add"))));
+			mySheet->SetName(sheetName);
+			return mySheet;
+		}catch(...){
+			
+		}
+		return mySheet;
+	}
+	return NULL;
+}
+
+
+
+bool ExcelWorkbook::isReadOnly(){
+	if(this->isOpenned){
+		return (bool)GetAttribute("ReadOnly").lVal;
+	}
+	return false;
+}
+
+bool ExcelWorkbook::Save(){ //Save current workbook
+	if(this->isOpenned){
+		try{
+			ExecuteMethode("Save",0);
+			return true;
+		}catch(...){
+			 throw;
+		}
+	}
+	return false;
+}
+bool ExcelWorkbook::SaveAs(Upp::String filePath){//Save current workbook at filePath
+	if(this->isOpenned){
+		try{
+			ExecuteMethode("SaveAs",1,AllocateString(filePath));
+			return true;
+		}catch(...){
+			 throw;
+		}
+	}
+	return false;
+}
+bool ExcelWorkbook::Close(){//Close current workbook
+	if(this->isOpenned){
+		try{
+			ExecuteMethode("Close",1,AllocateInt(0));
+			return true;
+		}catch(...){
+			 throw;
+		}
+	}
+	return false;
+}
+
+bool ExcelSheet::SetName(Upp::String sheetName){
+	try{
+		return SetAttribute(this->AppObj,"Name",sheetName);
+	}catch(...){
+		throw;	
+	}
+	return false;
 }
 
 ExcelWorkbook::~ExcelWorkbook(){
-	
+
 }
+
+ExcelRange ExcelSheet::Range(Upp::String range){
+	return ExcelRange(*this,this->ExecuteMethode("Range",1,AllocateString(range)));
+}
+
+ExcelRange ExcelSheet::Cells(int ligne, int colonne){
+	char range[50];
+	IndToStr(ligne,colonne,range);
+	return this->Range(Upp::String(range));
+}
+
+int ExcelSheet::GetRowNumberOfMySheet(){
+	return this->GetAttribute(this->GetAttribute("Rows"),"Count").intVal;
+}
+
+int ExcelSheet::GetLastRow(Upp::String Colonne){
+	char range[10];
+	ltoa(this->GetRowNumberOfMySheet(),range,10);
+	Upp::String finalRange = Colonne + "1:"+ Colonne + Upp::String(range);
+	/*
+	Here we use some excel const
+	xlDown		-4121	Down.
+	xlToLeft	-4159	To left.
+	xlToRight	-4161	To right.
+	xlUp		-4162	Up.
+	*/
+	
+	return this->GetAttribute(this->GetAttribute(this->GetAttribute("Range",1,AllocateString(finalRange)),"End",1,AllocateInt(-4121)),L"Row").intVal;	
+}
+
+
+
+ExcelSheet::ExcelSheet(ExcelWorkbook& parent, VARIANT appObj){
+	this->AppObj = appObj;
+	this->parent = &parent;	
+}
+
 ExcelSheet::~ExcelSheet(){
 	
+}
+
+ExcelRange::ExcelRange(ExcelSheet &parent,VARIANT appObj){
+	this->AppObj = appObj;
+	this->parent = &parent;	
 }
 ExcelRange::~ExcelRange(){
 	

@@ -45,19 +45,20 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 	private:
 		ExcelApp* parent; //Pointer to excelApp
 		Upp::Vector<ExcelSheet> sheets; //Vector of every Worksheets
-		bool isOpenned; //This bool must be useless But I prefere to have in case of object is still present in memory by a missing unreferenced pointer
+		bool isOpenned = false; //This bool must be useless But I prefere to have in case of object is still present in memory by a missing unreferenced pointer
 	public:
 		~ExcelWorkbook();
 		ExcelWorkbook(ExcelWorkbook&&) = default; //Copy constructor
 		ExcelWorkbook& operator=(ExcelWorkbook&&) = default; //moveable operator
 		ExcelWorkbook(ExcelApp &parent,VARIANT AppObj); //Constructor basic
 		
-		ExcelSheet Sheets(int index);//Allow to retrieve worksheet by is index 
-		ExcelSheet Sheets(Upp::String name);//Allow to retrieve worksheet by is name
+		ExcelSheet* Sheets(int index);//Allow to retrieve worksheet by is index 
+		ExcelSheet* Sheets(Upp::String name);//Allow to retrieve worksheet by is name
 		
-		bool AddSheet(); //Create new Sheet with default Name
-		bool AddSheet(Upp::String sheetName); //Create new Sheet with defined name 
+		ExcelSheet* AddSheet(); //Create new Sheet with default Name
+		ExcelSheet* AddSheet(Upp::String sheetName); //Create new Sheet with defined name 
 		
+		bool ResolveSheet();
 		bool isReadOnly(); //Return true if the workbook is readOnly
 		
 		bool Save(); //Save current workbook
@@ -67,16 +68,16 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 
 class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 	private:
-	//	ExcelWorkbook* parent;//Pointer to excelworkbook
+		ExcelWorkbook* parent;//Pointer to excelworkbook
 	public:
 		ExcelSheet(ExcelWorkbook &parent,VARIANT AppObj);
 		~ExcelSheet();
 		ExcelRange Range(Upp::String range); //Return a Range
 		ExcelRange Cells(int ligne, int colonne); //Return a Cells
 		
+		bool SetName(Upp::String sheetName); //Redefine name of sheet
 		int GetLastRow(Upp::String Colonne);
-		
-		bool setName(Upp::String name); //Redefine name of sheet 
+		int GetRowNumberOfMySheet();
 };
 
 class ExcelRange : public Ole {
@@ -84,7 +85,7 @@ class ExcelRange : public Ole {
 		ExcelSheet* parent; //Pointer to excelWorkbook
 	public:
 		
-		ExcelRange(ExcelSheet &parent,VARIANT AppObj);
+		ExcelRange(ExcelSheet &parent,VARIANT appObj);
 		~ExcelRange();
 		
 		Upp::String Value(); //Return value of range

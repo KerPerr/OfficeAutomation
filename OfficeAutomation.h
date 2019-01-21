@@ -40,6 +40,9 @@ class Ole {
 		virtual VARIANT GetAttribute(Upp::WString attributeName); //Allow to retrieve attribute Value By VARIANT
 		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName);//Allow to retrieve attribute Value By VARIANT
 		
+		virtual VARIANT GetAttribute(Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
+		
 		virtual bool SetAttribute(Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
 		virtual bool SetAttribute(Upp::WString attributeName, int value);//Allow to set attribute Value
 		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
@@ -51,7 +54,6 @@ class Ole {
 };
 
 #include "Excel.h"
-
 
 
 #endif

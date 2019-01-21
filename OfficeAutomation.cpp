@@ -41,6 +41,7 @@ HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLEST
         {
         sprintf(buf, "IDispatch::GetIDsOfNames(\"%s\") failed w/err 0x%08lx", szName, hr);
         MessageBox(NULL, buf, "AutoWrap()", 0x10010);
+      	// throw 1;
         //_exit(0);
         return hr;
     }
@@ -70,40 +71,52 @@ HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLEST
         {
                 sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx",
                         szName, dispID, hr);
+                       // throw 1;
                 MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                 switch(hr)
                 {
                 case DISP_E_BADPARAMCOUNT:
+                     //	throw 1;
                         MessageBox(NULL, "DISP_E_BADPARAMCOUNT", "Error:", 0x10010);
                         break;
                 case DISP_E_BADVARTYPE:
+                    //	 throw 1;
                         MessageBox(NULL, "DISP_E_BADVARTYPE", "Error:", 0x10010);
                         break;
                 case DISP_E_EXCEPTION:
+                    //	 throw 1;
                         MessageBox(NULL, "DISP_E_EXCEPTION", "Error:", 0x10010);
                         break;
                 case DISP_E_MEMBERNOTFOUND:
+                     //	throw 1;
                         MessageBox(NULL, "DISP_E_MEMBERNOTFOUND", "Error:", 0x10010);
                         break;
                 case DISP_E_NONAMEDARGS:
+                    	// throw 1;
                         MessageBox(NULL, "DISP_E_NONAMEDARGS", "Error:", 0x10010);
                         break;
                 case DISP_E_OVERFLOW:
+                     //	throw 1;
                         MessageBox(NULL, "DISP_E_OVERFLOW", "Error:", 0x10010);
                         break;
                 case DISP_E_PARAMNOTFOUND:
+                    	// throw 1;
                         MessageBox(NULL, "DISP_E_PARAMNOTFOUND", "Error:", 0x10010);
                         break;
                 case DISP_E_TYPEMISMATCH:
+                    	// throw 1;
                         MessageBox(NULL, "DISP_E_TYPEMISMATCH", "Error:", 0x10010);
                         break;
                 case DISP_E_UNKNOWNINTERFACE:
+                     //	throw 1;
                         MessageBox(NULL, "DISP_E_UNKNOWNINTERFACE", "Error:", 0x10010);
                         break;
                 case DISP_E_UNKNOWNLCID:
+                    //	 throw 1;
                         MessageBox(NULL, "DISP_E_UNKNOWNLCID", "Error:", 0x10010);
                         break;
                 case DISP_E_PARAMNOTOPTIONAL:
+                    //	 throw 1;
                         MessageBox(NULL, "DISP_E_PARAMNOTOPTIONAL", "Error:", 0x10010);
                         break;
                 }
@@ -185,70 +198,109 @@ VARIANT Ole::AllocateInt(int myVar){
 
 VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
 {
-	return this->GetAttribute(this->AppObj,attributeName);
+	try{
+		return this->GetAttribute(this->AppObj,attributeName);
+	}catch(...){
+		throw;	
+	}
 }
 		
 bool Ole::SetAttribute(Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
 {
 	try{
-	this->SetAttribute(this->AppObj,attributeName,value);
-	return true;
+		this->SetAttribute(this->AppObj,attributeName,value);
+		return true;
 	}catch(...){
-		return false;	
+		throw;	
 	}
 }
 bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attribute Value
 {
 	try{
-	VARIANT buffer={0};
-	this->SetAttribute(this->AppObj,attributeName,value);
-	return true;
+		VARIANT buffer={0};
+		this->SetAttribute(this->AppObj,attributeName,value);
+		return true;
 	}catch(...){
-		return false;	
+		throw;	
 	}
 }
 		
 VARIANT Ole::ExecuteMethode(Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
 {
-	va_list vl;
-	va_start(vl,cArgs);
-	return this->ExecuteMethode(this->AppObj,methodName,cArgs,va_arg(vl,VARIANT));
+	try{
+		va_list vl;
+		va_start(vl,cArgs);
+		return this->ExecuteMethode(this->AppObj,methodName,cArgs,va_arg(vl,VARIANT));
+	}catch(...){
+		throw;
+	}
 }
 
 
 VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
 {
-	VARIANT buffer={0};
-	AutoWrap(DISPATCH_PROPERTYGET,&buffer,variant.pdispVal,(wchar_t*)~attributeName,0);
-	return buffer;
+	try{
+		VARIANT buffer={0};
+		AutoWrap(DISPATCH_PROPERTYGET,&buffer,variant.pdispVal,(wchar_t*)~attributeName,0);
+		return buffer;
+	}catch(...){
+		throw;	
+	}
 }
 		
 bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
 {
 	try{
-	VARIANT buffer={0};
-	AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateString(value));
-	return true;
+		VARIANT buffer={0};
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateString(value));
+		return true;
 	}catch(...){
-		return false;	
+		throw;	
 	}
 }
 bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//Allow to set attribute Value
 {
 	try{
-	VARIANT buffer={0};
-	AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateInt(value));
-	return true;
+		VARIANT buffer={0};
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateInt(value));
+		return true;
 	}catch(...){
-		return false;	
+		throw;	
 	}
 }
 		
 VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
 {
-	va_list vl;
-	va_start(vl,cArgs);
-	VARIANT buffer={0};
-	AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,cArgs,va_arg(vl,VARIANT ));
-	return buffer;
+	try{
+		va_list vl;
+		va_start(vl,cArgs);
+		VARIANT buffer={0};
+		AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,cArgs,va_arg(vl,VARIANT ));
+		return buffer;
+	}catch(...){
+		throw;
+	}
+}
+
+VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
+	try{
+		va_list vl;
+		va_start(vl,cArgs);
+		VARIANT buffer={0};
+		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,AppObj.pdispVal,(wchar_t*)~attributeName,cArgs,va_arg(vl,VARIANT ));
+		return buffer;
+	}catch(...){
+		throw;
+	}
+}
+VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...){
+  	try{
+		va_list vl;
+		va_start(vl,cArgs);
+		VARIANT buffer={0};
+		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~attributeName,cArgs,va_arg(vl,VARIANT ));
+		return buffer;
+	}catch(...){
+		throw;
+	}
 }
