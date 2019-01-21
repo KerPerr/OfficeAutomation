@@ -38,11 +38,16 @@ class Ole {
 		// It mean you must know how VARIANT work to retrieve information you want
 		/*******************************************************************/
 		virtual VARIANT GetAttribute(Upp::WString attributeName); //Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName);//Allow to retrieve attribute Value By VARIANT
 		
 		virtual bool SetAttribute(Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
 		virtual bool SetAttribute(Upp::WString attributeName, int value);//Allow to set attribute Value
+		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
+		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, int value);//Allow to set attribute Value
 		
 		virtual VARIANT ExecuteMethode(Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
+		virtual VARIANT ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
+		
 };
 
 #include "Excel.h"

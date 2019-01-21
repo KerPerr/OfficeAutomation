@@ -186,16 +186,13 @@ VARIANT Ole::AllocateInt(int myVar){
 
 VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
 {
-	VARIANT buffer={0};
-	AutoWrap(DISPATCH_PROPERTYGET,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,0);
-	return buffer;
+	return this->GetAttribute(this->AppObj,attributeName);
 }
 		
 bool Ole::SetAttribute(Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
 {
 	try{
-	VARIANT buffer={0};
-	AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,1,AllocateString(value));
+	this->SetAttribute(this->AppObj,attributeName,value);
 	return true;
 	}catch(...){
 		return false;	
@@ -205,7 +202,7 @@ bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attr
 {
 	try{
 	VARIANT buffer={0};
-	AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,1,AllocateInt(value));
+	this->SetAttribute(this->AppObj,attributeName,value);
 	return true;
 	}catch(...){
 		return false;	
@@ -216,7 +213,43 @@ VARIANT Ole::ExecuteMethode(Upp::WString methodName,int cArgs...)//Allow to exec
 {
 	va_list vl;
 	va_start(vl,cArgs);
+	return this->ExecuteMethode(this->AppObj,methodName,cArgs,va_arg(vl,VARIANT));
+}
+
+
+VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
+{
 	VARIANT buffer={0};
-	AutoWrap(DISPATCH_METHOD,&buffer,this->AppObj.pdispVal,(wchar_t*)~methodName,cArgs,va_arg(vl,VARIANT ));
+	AutoWrap(DISPATCH_PROPERTYGET,&buffer,variant.pdispVal,(wchar_t*)~attributeName,0);
+	return buffer;
+}
+		
+bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
+{
+	try{
+	VARIANT buffer={0};
+	AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateString(value));
+	return true;
+	}catch(...){
+		return false;	
+	}
+}
+bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//Allow to set attribute Value
+{
+	try{
+	VARIANT buffer={0};
+	AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateInt(value));
+	return true;
+	}catch(...){
+		return false;	
+	}
+}
+		
+VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
+{
+	va_list vl;
+	va_start(vl,cArgs);
+	VARIANT buffer={0};
+	AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,cArgs,va_arg(vl,VARIANT ));
 	return buffer;
 }

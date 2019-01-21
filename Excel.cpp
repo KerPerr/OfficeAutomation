@@ -132,6 +132,14 @@ bool ExcelApp::FindApplication(){
 	return false;
 }
 
+bool ExcelApp::NewWorkbook(){
+	if(this->ExcelIsStarted){
+		GetAttribute(GetAttribute("Workbooks"),"Add");
+		return true;
+	}
+	return false;
+}
+
 ExcelWorkbook::~ExcelWorkbook(){
 	
 }
