@@ -13,6 +13,7 @@ class ExcelApp; //Class represents an   Excel Application
 class ExcelWorkbook; //Class represents Excel Workbook
 class ExcelSheet; //Class represents an Excel WorkSheet
 class ExcelRange; //Class represents an Excel Range
+class ExcelCell; //Class represents  an Excel Cell
 
 class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 	private: 
@@ -26,7 +27,7 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		ExcelWorkbook* Workbooks(int index); //Allow to retrieve workbook by is index 
 		ExcelWorkbook* Workbooks(Upp::String name); //Allow to retrieve workbook by is name
 		
-		bool Start(); //Start new Excel Applicatio
+		bool Start(); //Start new Excel Application
 		bool FindOrStart(); //Find running Excel or Start new One
 		bool Quit(); //Close current Excel Application
 		
@@ -73,7 +74,7 @@ class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 		ExcelSheet(ExcelWorkbook &parent,VARIANT AppObj);
 		~ExcelSheet();
 		ExcelRange Range(Upp::String range); //Return a Range
-		ExcelRange Cells(int ligne, int colonne); //Return a Cells
+		ExcelCell Cells(int ligne, int colonne); //Return a Cells
 		
 		bool SetName(Upp::String sheetName); //Redefine name of sheet
 		int GetLastRow(Upp::String Colonne); //Retrieve last row of a colonne
@@ -90,8 +91,29 @@ class ExcelRange : public Ole {
 		ExcelRange(ExcelSheet &parent,VARIANT appObj);
 		~ExcelRange();
 		
-		Upp::String Value(); //Return value of range
+		ExcelCell Cells(int ligne, int colonne); //Return a Cells
+		/*
+			Here we must add every method a Range could land  exemple : Borders
+		*/
+		
+		Upp::String Value(); //Return value of Cells
 		bool Value(Upp::String value);//Set value of range
+		
+};
+
+class ExcelCell : public Ole {
+	private:
+		ExcelRange* parent= NULL; //pointer to the range 
+	public: 
+	
+		ExcelCell(ExcelRange &parent,VARIANT appObj);
+		ExcelCell(VARIANT appObj);
+		~ExcelCell();
+		/*
+			Here we must add every method a cell could land 
+		*/
+		Upp::String Value();
+		bool Value(Upp::String value);//Set value of Cells
 		
 };
 

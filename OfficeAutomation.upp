@@ -5,7 +5,8 @@ file
 	Excel.cpp,
 	Excel.h,
 	OfficeAutomation.h,
-	OfficeAutomation.cpp;
+	OfficeAutomation.cpp,
+	src.tpp;
 
 mainconfig
 	"" = "";

@@ -40,8 +40,8 @@ bool ExcelApp::Quit() //Close current Excel Application
 		try{
 			this->ExecuteMethode("Quit",0);	
 			return true;
-		}catch(...){
-			return false;
+		}catch(OleException const& exception){
+			throw exception;
 		}
 	}
 	return false;
@@ -53,8 +53,8 @@ bool ExcelApp::SetVisible(bool set)//Set or not the application visible
 		try{
 			this->SetAttribute("Visible",(int)set);
 			return true;
-		}catch(...){
-			return false;
+		}catch(OleException const& exception){
+			throw exception;
 		}
 	}
 	return false;
@@ -213,15 +213,15 @@ ExcelSheet* ExcelWorkbook::AddSheet(){ //Create new Sheet with default Name
 
 ExcelSheet* ExcelWorkbook::AddSheet(Upp::String sheetName){ //Create new Sheet with defined name 
 	if(this->isOpenned){
-		ExcelSheet* mySheet;
+
 		try{			
-			mySheet = (&this->sheets.Add(ExcelSheet(*this,GetAttribute(GetAttribute("Sheets"),"Add"))));
-			mySheet->SetName(sheetName);
-			return mySheet;
-		}catch(...){
-			
+			this->sheets.Add(ExcelSheet(*this,GetAttribute(GetAttribute("Sheets"),"Add")));
+			this->sheets[this->sheets.GetCount()-1].SetName(sheetName);
+			return &this->sheets[this->sheets.GetCount()-1];
+		}catch(OleException const& exception){
+			throw exception;
 		}
-		return mySheet;
+		return NULL;
 	}
 	return NULL;
 }
@@ -240,8 +240,8 @@ bool ExcelWorkbook::Save(){ //Save current workbook
 		try{
 			ExecuteMethode("Save",0);
 			return true;
-		}catch(...){
-			 throw;
+		}catch(OleException const& exception){
+			throw exception;
 		}
 	}
 	return false;
@@ -251,8 +251,8 @@ bool ExcelWorkbook::SaveAs(Upp::String filePath){//Save current workbook at file
 		try{
 			ExecuteMethode("SaveAs",1,AllocateString(filePath));
 			return true;
-		}catch(...){
-			 throw;
+		}catch(OleException const& exception){
+			throw exception;
 		}
 	}
 	return false;
@@ -262,8 +262,8 @@ bool ExcelWorkbook::Close(){//Close current workbook
 		try{
 			ExecuteMethode("Close",1,AllocateInt(0));
 			return true;
-		}catch(...){
-			 throw;
+		}catch(OleException const& exception){
+			throw exception;
 		}
 	}
 	return false;
@@ -272,8 +272,8 @@ bool ExcelWorkbook::Close(){//Close current workbook
 bool ExcelSheet::SetName(Upp::String sheetName){
 	try{
 		return SetAttribute(this->AppObj,"Name",sheetName);
-	}catch(...){
-		throw;	
+	}catch(OleException const& exception){
+		throw exception;
 	}
 	return false;
 }
@@ -286,10 +286,10 @@ ExcelRange ExcelSheet::Range(Upp::String range){
 	return ExcelRange(*this,this->ExecuteMethode("Range",1,AllocateString(range)));
 }
 
-ExcelRange ExcelSheet::Cells(int ligne, int colonne){
+ExcelCell ExcelSheet::Cells(int ligne, int colonne){
 	char range[50];
 	IndToStr(ligne,colonne,range);
-	return ExcelRange(*this, GetAttribute(GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"Cells",2, AllocateInt(1),AllocateInt(1))); 
+	return ExcelCell(GetAttribute(GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"Cells",2, AllocateInt(ligne),AllocateInt(colonne)));; 
 }
 
 int ExcelSheet::GetRowNumberOfMySheet(){
@@ -337,6 +337,36 @@ ExcelRange::ExcelRange(ExcelSheet &parent,VARIANT appObj){
 	this->AppObj = appObj;
 	this->parent = &parent;	
 }
+
+
+
 ExcelRange::~ExcelRange(){
 	
+}
+
+ExcelCell ExcelRange::Cells(int ligne, int colonne){
+	char range[50];
+	IndToStr(ligne,colonne,range);
+	return ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(ligne),AllocateInt(colonne)));; 
+}
+
+ExcelCell::ExcelCell(ExcelRange &parent,VARIANT appObj){
+	this->AppObj = appObj;
+	this->parent = &parent;	
+}
+
+ExcelCell::ExcelCell(VARIANT appObj){
+	this->AppObj = appObj;
+}
+
+ExcelCell::~ExcelCell(){
+	
+}
+
+Upp::String ExcelCell::Value(){ //Return value of range
+	return BSTRtoString(GetAttribute("Value").bstrVal);		
+}
+
+bool ExcelCell::Value(Upp::String value){//Set value of range
+	return SetAttribute("Value",value);
 }

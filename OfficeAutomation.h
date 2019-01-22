@@ -3,7 +3,7 @@
 
 #include <Core/Core.h>
 #include <windows.h> 
-
+#include <exception>
 /* 
  Project created 01/18/2019 
  By Clément Hamon And Pierre Castrec
@@ -14,6 +14,8 @@
 class Ole;
 
 class Ole {
+	private: 
+		virtual HRESULT AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp);//Allow code execution on whatever object 
 	public:
 		VARIANT AppObj;
 		
@@ -25,7 +27,6 @@ class Ole {
 		const Upp::WString WS_ProdApp = L"InternetExplorer.Application"; // this one is to use in my context, you'r supposed to never use it :p
 		
 		virtual VARIANT StartApp(const Upp::WString appName); 
-		virtual HRESULT AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp);//Allow code execution on whatever object 
 		virtual Upp::String BSTRtoString (BSTR bstr); //Converting VARIANT.BSTR to Upp::String
 		virtual void IndToStr(int row,int col,char* strResult);//translating row and column number into the string name of the cell.
 		
@@ -53,6 +54,20 @@ class Ole {
 		
 };
 
+class OleException : std::exception { //classe to managed every OLE exception
+	public:
+	    OleException(int numero=0, Upp::String const& phrase="", int niveau=0) throw()
+	         :m_numero(numero),m_phrase(phrase),m_niveau(niveau)
+	    {}
+	    virtual const char* what() const throw(){return m_phrase.ToStd().c_str();}
+	    int getNiveau() const throw(){return m_niveau;}
+		virtual ~OleException() throw(){}
+
+	private:
+	    int m_numero;               //Id of Error
+	    Upp::String m_phrase;       //Error summaries
+	    int m_niveau;               //level of Error  0=> Invoque problem; 1 => Exception from OLE ; 2 => Exception from VARIANT Wrapper
+};
 #include "Excel.h"
 
 

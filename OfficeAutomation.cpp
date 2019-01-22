@@ -135,93 +135,83 @@ HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLEST
 //This function come from MSDN and have been Change By Clément Hamon
 HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp)
 {
+	HRESULT hr;
     if(!pDisp)
         {
-        MessageBox(NULL, "NULL IDispatch passed to AutoWrap()", "Error", 0x10010);
+       // MessageBox(NULL, "NULL IDispatch passed to AutoWrap()", "Error", 0x10010);
+        throw OleException(0,"NULL IDispatch passed to AutoWrap()",0);
         _exit(0);
     }
-
     // Variables used...
     DISPID dispID;
-    HRESULT hr;
     char buf[200];
     char szName[200];
-
     // Convert down to ANSI
     WideCharToMultiByte(CP_ACP, 0, ptName, -1, szName, 256, NULL, NULL);
-
     // Get DISPID for name passed...
     hr = pDisp->GetIDsOfNames(IID_NULL, &ptName, 1, LOCALE_USER_DEFAULT, &dispID);
     if(FAILED(hr))
         {
-        sprintf(buf, "IDispatch::GetIDsOfNames(\"%s\") failed w/err 0x%08lx", szName, hr);
-        MessageBox(NULL, buf, "AutoWrap()", 0x10010);
-      	// throw 1;
-        //_exit(0);
-        return hr;
+        sprintf(buf, "Action \"%s\" unreachable... err 0x%08lx", szName, hr);
+        throw OleException(1,String(buf),0);
+        _exit(0);
     }
-
     // Make the call!
     hr = pDisp->Invoke(dispID, IID_NULL, LOCALE_SYSTEM_DEFAULT, autoType, &dp, pvResult, NULL, NULL);
     if(FAILED(hr))
         {
-                sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx",
-                        szName, dispID, hr);
-                       // throw 1;
-                MessageBox(NULL, buf, "AutoWrap()", 0x10010);
+              //  MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                 switch(hr)
                 {
                 case DISP_E_BADPARAMCOUNT:
-                     //	throw 1;
-                        MessageBox(NULL, "DISP_E_BADPARAMCOUNT", "Error:", 0x10010);
+                        sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_BADPARAMCOUNT",szName, dispID, hr);
+                        throw OleException(2,String(buf),0);
                         break;
                 case DISP_E_BADVARTYPE:
-                    //	 throw 1;
-                        MessageBox(NULL, "DISP_E_BADVARTYPE", "Error:", 0x10010);
+                        sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_BADVARTYPE",szName, dispID, hr);
+                        throw OleException(3,String(buf),0);
                         break;
                 case DISP_E_EXCEPTION:
-                    //	 throw 1;
-                        MessageBox(NULL, "DISP_E_EXCEPTION", "Error:", 0x10010);
+                        sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_EXCEPTION",szName, dispID, hr);
+                        throw OleException(4,String(buf),0);
                         break;
                 case DISP_E_MEMBERNOTFOUND:
-                     //	throw 1;
-                        MessageBox(NULL, "DISP_E_MEMBERNOTFOUND", "Error:", 0x10010);
+                        sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_MEMBERNOTFOUND",szName, dispID, hr);
+                        throw OleException(5,String(buf),0);
                         break;
                 case DISP_E_NONAMEDARGS:
-                    	// throw 1;
-                        MessageBox(NULL, "DISP_E_NONAMEDARGS", "Error:", 0x10010);
+                        sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_NONAMEDARGS",szName, dispID, hr);
+                        throw OleException(6,String(buf),0);
                         break;
                 case DISP_E_OVERFLOW:
-                     //	throw 1;
-                        MessageBox(NULL, "DISP_E_OVERFLOW", "Error:", 0x10010);
+                        sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_OVERFLOW",szName, dispID, hr);
+                        throw OleException(7,String(buf),0);
                         break;
                 case DISP_E_PARAMNOTFOUND:
-                    	// throw 1;
-                        MessageBox(NULL, "DISP_E_PARAMNOTFOUND", "Error:", 0x10010);
+                    	sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_PARAMNOTFOUND",szName, dispID, hr);
+                        throw OleException(8,String(buf),0);
                         break;
                 case DISP_E_TYPEMISMATCH:
-                    	// throw 1;
-                        MessageBox(NULL, "DISP_E_TYPEMISMATCH", "Error:", 0x10010);
+                    	sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_TYPEMISMATCH",szName, dispID, hr);
+                        throw OleException(9,String(buf),0);
                         break;
                 case DISP_E_UNKNOWNINTERFACE:
-                     //	throw 1;
-                        MessageBox(NULL, "DISP_E_UNKNOWNINTERFACE", "Error:", 0x10010);
+                        sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_UNKNOWNINTERFACE",szName, dispID, hr);
+                        throw OleException(10,String(buf),0);
                         break;
                 case DISP_E_UNKNOWNLCID:
-                    //	 throw 1;
-                        MessageBox(NULL, "DISP_E_UNKNOWNLCID", "Error:", 0x10010);
+                    	sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_UNKNOWNLCID",szName, dispID, hr);
+                        throw OleException(11,String(buf),0);
                         break;
                 case DISP_E_PARAMNOTOPTIONAL:
-                    //	 throw 1;
-                        MessageBox(NULL, "DISP_E_PARAMNOTOPTIONAL", "Error:", 0x10010);
+                   		sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_PARAMNOTOPTIONAL",szName, dispID, hr);
+                        throw OleException(12,String(buf),0);
                         break;
                 }
-                // _exit(0);
                 return hr;
         }
     return hr;
 }
-
 
 //conversion BSTR to CHAR
 Upp::String Ole::BSTRtoString (BSTR bstr)
@@ -252,17 +242,14 @@ VARIANT Ole::StartApp(const Upp::WString appName){
    */
    if(FAILED(CLSIDFromProgID(appName, &clsApp))) {
       MessageBox(NULL, "CLSIDFromProgID() failed", "Error", 0x10010);
-      App.intVal =-1;
-      return App;
-   }	
+      throw OleException(13,"CLSIDFromProgID() => App Named " + appName.ToString() +" Can't be find",1);
+   }
 	
 	if (FAILED(CoCreateInstance(clsApp, NULL, CLSCTX_LOCAL_SERVER, IID_IDispatch, (void **)&App.pdispVal)))
 	{
 		MessageBox(NULL, "this App's not registered properly", "Error", 0x10010);
-		App.intVal =-1;
-		return App;
+		throw OleException(14,"CoCreateInstance() => this App's ("+ appName.ToString()  +")not registered properly",1);
 	}
-	
 	return App;
 }
 
@@ -290,12 +277,13 @@ VARIANT Ole::AllocateInt(int myVar){
 
 VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
 {
+	VARIANT *pArgs;
 	try{
 		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
 
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[0];
+	    pArgs = new VARIANT[0];
 	
 	    // Build DISPPARAMS
 	    dp.cArgs = 0;
@@ -304,13 +292,15 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attrib
 		AutoWrap(DISPATCH_PROPERTYGET,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(...){
-		throw;	
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 		
 bool Ole::SetAttribute(Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
 {
+	VARIANT *pArgs;
 	try{
 		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
@@ -329,13 +319,15 @@ bool Ole::SetAttribute(Upp::WString attributeName, Upp::String value)//Allow to 
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(...){
-		throw;	
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 
 bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attribute Value
 {
+	VARIANT *pArgs;
 	try{
 		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
@@ -354,13 +346,16 @@ bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attr
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(...){
-		throw;	
+	}catch(OleException const& exception){
+		Cout() << String(exception.what()) <<"\n";	
+		delete [] pArgs;
+		throw exception;
 	}
 }
 		
 VARIANT Ole::ExecuteMethode(Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
 {
+	VARIANT *pArgs;
 	try{
 		va_list marker;
     	va_start(marker, cArgs);
@@ -381,14 +376,16 @@ VARIANT Ole::ExecuteMethode(Upp::WString methodName,int cArgs...)//Allow to exec
 		AutoWrap(DISPATCH_METHOD,&buffer,this->AppObj.pdispVal,(wchar_t*)~methodName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(...){
-		throw;
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 
 
 VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
 {
+	VARIANT *pArgs;
 	try{
 		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
@@ -403,13 +400,15 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to
 		AutoWrap(DISPATCH_PROPERTYGET,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(...){
-		throw;	
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 		
 bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
 {
+	VARIANT *pArgs;
 	try{
 		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
@@ -428,12 +427,14 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String v
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(...){
-		throw;	
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//Allow to set attribute Value
 {
+	VARIANT *pArgs;
 	try{
 		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
@@ -452,13 +453,15 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//A
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(...){
-		throw;	
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 		
 VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
 {
+	VARIANT *pArgs;
 	try{
 		va_list marker;
     	va_start(marker, cArgs);
@@ -479,12 +482,14 @@ VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...
 		AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(...){
-		throw;
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 
 VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
+	VARIANT *pArgs;
 	try{
 		va_list marker;
     	va_start(marker, cArgs);
@@ -504,11 +509,13 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
 		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(...){
-		throw;
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
 VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...){
+	VARIANT *pArgs;
   	try{
   		va_list marker;
     	va_start(marker, cArgs);
@@ -529,7 +536,8 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs..
 		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(...){
-		throw;
+	}catch(OleException const& exception){
+		delete [] pArgs;
+		throw exception;
 	}
 }
