@@ -86,9 +86,12 @@ class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 class ExcelRange : public Ole {
 	private:
 		ExcelSheet* parent; //Pointer to excelWorkbook
+		Upp::String range;
 	public:
+		Upp::String GetTheRange();
 		
 		ExcelRange(ExcelSheet &parent,VARIANT appObj);
+		ExcelRange(ExcelSheet &parent,VARIANT appObj,Upp::String actualRange);
 		~ExcelRange();
 		
 		ExcelCell Cells(int ligne, int colonne); //Return a Cells
@@ -96,12 +99,12 @@ class ExcelRange : public Ole {
 			Here we must add every method a Range could land  exemple : Borders
 		*/
 		
-		Upp::String Value(); //Return value of Cells
-		bool Value(Upp::String value);//Set value of range
-		
+		Upp::Vector<ExcelCell> Value(); //Return every  Cells
+		bool Value(Upp::String value); //set this value to every cells of the range
+		bool Value(int value); //set this value to every cells of the range
 };
 
-class ExcelCell : public Ole {
+class ExcelCell : public Ole , public Upp::Moveable<ExcelCell> {
 	private:
 		ExcelRange* parent= NULL; //pointer to the range 
 	public: 
@@ -114,6 +117,7 @@ class ExcelCell : public Ole {
 		*/
 		Upp::String Value();
 		bool Value(Upp::String value);//Set value of Cells
+		bool Value(int value);//Set value of Cells
 		
 };
 

@@ -29,7 +29,9 @@ class Ole {
 		virtual VARIANT StartApp(const Upp::WString appName); 
 		virtual Upp::String BSTRtoString (BSTR bstr); //Converting VARIANT.BSTR to Upp::String
 		virtual void IndToStr(int row,int col,char* strResult);//translating row and column number into the string name of the cell.
-		
+		virtual int ColStrToInt(Upp::String target);
+		virtual int ExtractRow(Upp::String target);
+	
 		virtual VARIANT AllocateString(Upp::String arg); //Easy way to allocate some data into variant to use it as arg
 		virtual VARIANT AllocateString(Upp::WString arg);//Easy way to allocate some data into variant to use it as arg
 		virtual VARIANT AllocateInt(int arg);//Easy way to allocate some data into variant to use it as arg
@@ -51,6 +53,9 @@ class Ole {
 		
 		virtual VARIANT ExecuteMethode(Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
 		virtual VARIANT ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
+		
+		virtual void DumpVariant();
+		virtual void DumpVariant(VARIANT variant);
 		
 };
 

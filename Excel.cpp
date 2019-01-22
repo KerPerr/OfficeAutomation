@@ -283,7 +283,7 @@ ExcelWorkbook::~ExcelWorkbook(){
 }
 
 ExcelRange ExcelSheet::Range(Upp::String range){
-	return ExcelRange(*this,this->ExecuteMethode("Range",1,AllocateString(range)));
+ 	return ExcelRange(*this,this->GetAttribute("Range",1,AllocateString(range)),range);
 }
 
 ExcelCell ExcelSheet::Cells(int ligne, int colonne){
@@ -312,17 +312,57 @@ int ExcelSheet::GetLastRow(Upp::String Colonne){
 }
 
 ExcelRange ExcelSheet::GetCurrentRegion(){
-	return ExcelRange(*this,GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"));
+	return ExcelRange(*this,GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"");
 }
 
-Upp::String ExcelRange::Value(){ //Return value of range
-	return BSTRtoString(GetAttribute("Value").bstrVal);		
-}
+Upp::Vector<ExcelCell> ExcelRange::Value(){ //Return value of range
+	Upp::Vector<ExcelCell> allTheCells;
+	if (!this->GetTheRange().GetCount() < 1){
+		if( this->GetTheRange().Find(":") != -1){
+			Upp::String debut = this->GetTheRange().Left(this->GetTheRange().Find(":"))	;
+			Upp::String fin =  this->GetTheRange().Right(this->GetTheRange().GetCount() - (this->GetTheRange().Find(":")+1));
+			int lDebut = ExtractRow(debut);
+			int lFin = ExtractRow(fin);
+			int cDebut = ColStrToInt(debut);
+			int cFin = ColStrToInt(fin);
+			for (int c = cDebut; c <= cFin; c++){
+				for(int l = lDebut; l <= lFin; l++){
+					allTheCells.Add(ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(c),AllocateInt(l))));
+				}
+			}	
+		}
+		else
+		{
+			int ligne = ExtractRow(this->GetTheRange());
+			int colonne = ColStrToInt(this->GetTheRange());
+			allTheCells.Add(ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(ligne),AllocateInt(colonne))));
+		}
 
-bool ExcelRange::Value(Upp::String value){//Set value of range
-	return SetAttribute("Value",value);
+	}
+	return allTheCells;
+	
+//	return BSTRtoString(GetAttribute("Value").bstrVal);		
 }
-
+bool ExcelRange::Value(Upp::String value){ //set this value to every cells of the range
+	if (!this->GetTheRange().GetCount() < 1){
+		Upp::Vector<ExcelCell> myVector = this->Value();
+		for(int i = 0; i < myVector.GetCount(); i++){
+			myVector[i].Value(value);	
+		}
+		return true;
+	}
+	return false;
+}
+bool ExcelRange::Value(int value){ //set this value to every cells of the range
+	if (!this->GetTheRange().GetCount() < 1){
+		Upp::Vector<ExcelCell> myVector = this->Value();
+		for(int i = 0; i < myVector.GetCount(); i++){
+			myVector[i].Value(value);	
+		}
+		return true;	
+	}
+	return false;
+}
 
 ExcelSheet::ExcelSheet(ExcelWorkbook& parent, VARIANT appObj){
 	this->AppObj = appObj;
@@ -333,12 +373,20 @@ ExcelSheet::~ExcelSheet(){
 	
 }
 
+Upp::String ExcelRange::GetTheRange(){
+	return this->range;	
+}
+
+ExcelRange::ExcelRange(ExcelSheet &parent,VARIANT appObj,Upp::String range){
+	this->AppObj = appObj;
+	this->parent = &parent;
+	this->range = range;	
+}
+
 ExcelRange::ExcelRange(ExcelSheet &parent,VARIANT appObj){
 	this->AppObj = appObj;
 	this->parent = &parent;	
 }
-
-
 
 ExcelRange::~ExcelRange(){
 	
@@ -368,5 +416,8 @@ Upp::String ExcelCell::Value(){ //Return value of range
 }
 
 bool ExcelCell::Value(Upp::String value){//Set value of range
+	return SetAttribute("Value",value);
+}
+bool ExcelCell::Value(int value){//Set value of Cells
 	return SetAttribute("Value",value);
 }

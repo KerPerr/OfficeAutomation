@@ -10,6 +10,7 @@
 #define DISP_NOSHOWEXCEPTIONS 0x02
 
 using namespace Upp;
+
 /*
 //Fonction reprise de MSDN
 HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, int cArgs...)
@@ -165,34 +166,42 @@ HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLEST
                 {
                 case DISP_E_BADPARAMCOUNT:
                         sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_BADPARAMCOUNT",szName, dispID, hr);
+                         MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(2,String(buf),0);
                         break;
                 case DISP_E_BADVARTYPE:
                         sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_BADVARTYPE",szName, dispID, hr);
+                         MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(3,String(buf),0);
                         break;
                 case DISP_E_EXCEPTION:
                         sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_EXCEPTION",szName, dispID, hr);
+                         MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(4,String(buf),0);
                         break;
                 case DISP_E_MEMBERNOTFOUND:
                         sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_MEMBERNOTFOUND",szName, dispID, hr);
+                         MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(5,String(buf),0);
                         break;
                 case DISP_E_NONAMEDARGS:
                         sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_NONAMEDARGS",szName, dispID, hr);
+                         MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(6,String(buf),0);
                         break;
                 case DISP_E_OVERFLOW:
                         sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_OVERFLOW",szName, dispID, hr);
+                         MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(7,String(buf),0);
                         break;
                 case DISP_E_PARAMNOTFOUND:
                     	sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_PARAMNOTFOUND",szName, dispID, hr);
+                    	 MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(8,String(buf),0);
                         break;
                 case DISP_E_TYPEMISMATCH:
                     	sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx : DISP_E_TYPEMISMATCH",szName, dispID, hr);
+                    	 MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                         throw OleException(9,String(buf),0);
                         break;
                 case DISP_E_UNKNOWNINTERFACE:
@@ -208,6 +217,7 @@ HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLEST
                         throw OleException(12,String(buf),0);
                         break;
                 }
+                 MessageBox(NULL, buf, "AutoWrap()", 0x10010);
                 return hr;
         }
     return hr;
@@ -347,7 +357,6 @@ bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attr
 		delete [] pArgs;
 		return true;
 	}catch(OleException const& exception){
-		Cout() << String(exception.what()) <<"\n";	
 		delete [] pArgs;
 		throw exception;
 	}
@@ -540,4 +549,127 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs..
 		delete [] pArgs;
 		throw exception;
 	}
+}
+
+int Ole::ColStrToInt(Upp::String target){
+	int resultat= 0;
+	for(int i = 0; i < target.GetCount(); i++){	
+		if((int)toupper(target[i]) >64 && 	(int)toupper(target[i]) < 91){
+			if (i>0) {
+				resultat+=25;
+			}
+			resultat+= ((int)toupper(target[i]) -64);
+		}
+	}
+	return resultat;
+}
+
+int Ole::ExtractRow(Upp::String target)
+{
+	char myRow[target.GetCount()];
+	int iterator = 0;
+	for(int i = 0; i < target.GetCount(); i++){	
+		if( int(target[i]) >47 && int(target[i]) < 57){
+			myRow[iterator] = target[i];
+			iterator++;
+		}
+	}
+	return atoi(myRow);
+}
+
+void Ole::DumpVariant(){
+	
+	VARIANT variant = this->AppObj;
+//	Cout()<<(long) variant.lVal<<"\n";
+//	Cout()<<(byte) variant.bVal<<"\n";
+//	Cout()<< (short)variant.iVal<<"\n";
+//	Cout()<< (float)variant.fltVal<<"\n";
+//	Cout()<< (double)variant.dblVal<<"\n";
+//	Cout()<< variant.boolVal<<"\n";
+//	Cout()<< variant.scode<<"\n";
+//	Cout()<< variant.cyVal<<"\n";
+//	Cout()<< variant.date<<"\n";
+//	Cout()<< BSTRtoString(variant.bstrVal ) <<"\n";
+/*	Cout()<< *variant.punkVal<<"\n";
+	Cout()<< *variant.pdispVal<<"\n";
+	Cout()<< *variant.parray<<"\n";
+	Cout()<< *variant.pbVal<<"\n";
+	Cout()<< *variant.piVal<<"\n";
+	Cout()<< *variant.plVal<<"\n";
+	Cout()<< *variant.pllVal<<"\n";
+	Cout()<< *variant.pfltVal<<"\n";
+	Cout()<< *variant.pdblVal<<"\n";
+	Cout()<< *variant.pboolVal<<"\n";
+	Cout()<< *variant.pscode<<"\n";
+	Cout()<< *variant.pcyVal<<"\n";
+	Cout()<< *variant.pdate<<"\n"; 
+	Cout()<< *variantj.pbstrVal<<"\n";
+	Cout()<< **variant.ppunkVal<<"\n";
+	Cout()<< **variantj.ppdispVal<<"\n";
+	Cout()<< **variant.pparray<<"\n";
+	Cout()<< *variant.pvarVal<<"\n";*/
+//	Cout()<< variant.byref<<"\n";
+//	Cout()<< (char)variant.cVal<<"\n";
+//	Cout()<< (unsigned short)variant.uiVal<<"\n";
+//	Cout()<< (unsigned long) variant.ulVal<<"\n";
+//	Cout()<< variant.ullVal<<"\n";
+//	Cout()<< (int)variant.intVal<<"\n";
+//	Cout()<< (unsigned int)variant.uintVal<<"\n";
+//	Cout()<< *variant.pdecVal<<"\n";
+/*	while(variant.pcVal++){
+	Cout()<<"| "  <<*variant.pcVal<<"\n";	
+	}
+	*/
+/*	Cout()<< *variant.puiVal<<"\n";
+	Cout()<< *variant.pulVal<<"\n";
+	Cout()<< *variant.pullVal<<"\n";
+	Cout()<< *variant.pintVal<<"\n";
+	Cout()<< *variant.puintVal<<"\n";*/
+}
+
+void Ole::DumpVariant(VARIANT variant){
+	/*
+	Cout()<< variant.llVal <<"\n";
+	Cout()<< tvariant.lVal<<"\n";
+	Cout()<< variant.bVal<<"\n";
+	Cout()<< variant.iVal<<"\n";
+	Cout()<< variant.fltVal<<"\n";
+	Cout()<< variant.dblVal<<"\n";
+	Cout()<< variant.boolVal<<"\n";
+	Cout()<< variant.scode<<"\n";
+	Cout()<< variant.cyVal<<"\n";
+	Cout()<< variant.date<<"\n";
+	Cout()<< variant.bstrVal<<"\n";
+	Cout()<< *variant.punkVal<<"\n";
+	Cout()<< *variant.pdispVal<<"\n";
+	Cout()<< *variant.parray<<"\n";
+	Cout()<< *variant.pbVal<<"\n";
+	Cout()<< *variant.piVal<<"\n";
+	Cout()<< *variant.plVal<<"\n";
+	Cout()<< *variant.pllVal<<"\n";
+	Cout()<< *variant.pfltVal<<"\n";
+	Cout()<< *variant.pdblVal<<"\n";
+	Cout()<< *variant.pboolVal<<"\n";
+	Cout()<< *variant.pscode<<"\n";
+	Cout()<< *variant.pcyVal<<"\n";
+	Cout()<< *variant.pdate<<"\n"; 
+	Cout()<< *variantj.pbstrVal<<"\n";
+	Cout()<< **variant.ppunkVal<<"\n";
+	Cout()<< **variantj.ppdispVal<<"\n";
+	Cout()<< **variant.pparray<<"\n";
+	Cout()<< *variant.pvarVal<<"\n";
+	Cout()<< variant.byref<<"\n";
+	Cout()<< variantj.cVal<<"\n";
+	Cout()<< variant.uiVal<<"\n";
+	Cout()<< variant.ulVal<<"\n";
+	Cout()<< variant.ullVal<<"\n";
+	Cout()<< variant.intVal<<"\n";
+	Cout()<< variant.uintVal<<"\n";
+	Cout()<< *variant.pdecVal<<"\n";
+	Cout()<< *variant.pcVal<<"\n";
+	Cout()<< *variant.puiVal<<"\n";
+	Cout()<< *variant.pulVal<<"\n";
+	Cout()<< *variant.pullVal<<"\n";
+	Cout()<< *variant.pintVal<<"\n";
+	Cout()<< *variant.puintVal<<"\n";*/
 }
