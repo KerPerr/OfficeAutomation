@@ -5,10 +5,16 @@
 #include <windows.h> 
 #include <exception>
 /* 
- Project created 01/18/2019 
- By Clément Hamon And Pierre Castrec
- Lib used to drive every Microsoft Application's had OLE Compatibility.
- This project have to be used with Ultimate++ FrameWork and required the Core Librairy from it
+Project created 01/18/2019 
+By Clément Hamon And Pierre Castrec
+Lib used to drive every Microsoft Application's had OLE Compatibility.
+This project have to be used with Ultimate++ FrameWork and required the Core Librairy from it
+
+Copyright © 1998, 2019 Ultimate++ team
+All those sources are contained in "plugin" directory. Refer there for licenses, however all libraries have BSD-compatible license.
+Ultimate++ has BSD license:
+License : https://www.ultimatepp.org/app$ide$About$en-us.html
+Thanks to UPP team
 */
 
 class Ole;

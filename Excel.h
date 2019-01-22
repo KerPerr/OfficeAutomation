@@ -3,10 +3,16 @@
 #include "OfficeAutomation.h"
 
 /* 
- Project created 01/18/2019 
- By Clément Hamon And Pierre Castrec
- Lib used to drive every Microsoft Application's had OLE Compatibility.
- This project have to be used with Ultimate++ FrameWork and required the Core Librairy from it
+Project created 01/18/2019 
+By Clément Hamon Email: hamon.clement@outlook.fr
+Lib used to drive every Microsoft Application's had OLE Compatibility.
+This project have to be used with Ultimate++ FrameWork and required the Core Librairy from it
+
+Copyright © 1998, 2019 Ultimate++ team
+All those sources are contained in "plugin" directory. Refer there for licenses, however all libraries have BSD-compatible license.
+Ultimate++ has BSD license:
+License : https://www.ultimatepp.org/app$ide$About$en-us.html
+Thanks to UPP team
 */
 
 class ExcelApp; //Class represents an   Excel Application 
@@ -48,7 +54,7 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 		Upp::Vector<ExcelSheet> sheets; //Vector of every Worksheets
 		bool isOpenned = false; //This bool must be useless But I prefere to have in case of object is still present in memory by a missing unreferenced pointer
 	public:
-		~ExcelWorkbook();
+		~ExcelWorkbook();//Classic constructor
 		ExcelWorkbook(ExcelWorkbook&&) = default; //Copy constructor
 		ExcelWorkbook& operator=(ExcelWorkbook&&) = default; //moveable operator
 		ExcelWorkbook(ExcelApp &parent,VARIANT AppObj); //Constructor basic
@@ -71,8 +77,9 @@ class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 	private:
 		ExcelWorkbook* parent;//Pointer to excelworkbook
 	public:
-		ExcelSheet(ExcelWorkbook &parent,VARIANT AppObj);
 		~ExcelSheet();
+		ExcelSheet(ExcelWorkbook &parent,VARIANT AppObj); //Classic constructor
+		
 		ExcelRange Range(Upp::String range); //Return a Range
 		ExcelCell Cells(int ligne, int colonne); //Return a Cells
 		
@@ -83,39 +90,45 @@ class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 		ExcelRange GetCurrentRegion(); //Return ExcelRange that's represente the entire active range of the actual sheet
 };
 
-class ExcelRange : public Ole {
+class ExcelRange : public Ole { 
 	private:
 		ExcelSheet* parent; //Pointer to excelWorkbook
-		Upp::String range;
+		Upp::String range; //range of the object
 	public:
-		Upp::String GetTheRange();
 		
-		ExcelRange(ExcelSheet &parent,VARIANT appObj);
-		ExcelRange(ExcelSheet &parent,VARIANT appObj,Upp::String actualRange);
 		~ExcelRange();
-		
-		ExcelCell Cells(int ligne, int colonne); //Return a Cells
+		ExcelRange(ExcelSheet &parent,VARIANT appObj); //allow to create ExcelRange on current Variant 
+		ExcelRange(ExcelSheet &parent,VARIANT appObj,Upp::String actualRange); //This constructor allow user to pass the range used to get this object. 
+																			   //It's very important if you want to be able tu use every function that 
+																			   //do job on vector or return vector of Cells
+		Upp::String GetTheRange(); //Return the range used to get the Item, it can be empty
+		ExcelCell Cells(int ligne, int colonne); //Return a Cells by is column and row
+
+		/*
+			// From NOW you must have a ExcelRange where Upp::String range is initialized
+		*/
+
+		Upp::Vector<ExcelCell> Value(); //Return every  Cells on a Vector of Cells
+		bool Value(Upp::String value); //set this value to every cells of the range
+		bool Value(int value); //set this value to every cells of the range
 		/*
 			Here we must add every method a Range could land  exemple : Borders
 		*/
-		
-		Upp::Vector<ExcelCell> Value(); //Return every  Cells
-		bool Value(Upp::String value); //set this value to every cells of the range
-		bool Value(int value); //set this value to every cells of the range
 };
 
 class ExcelCell : public Ole , public Upp::Moveable<ExcelCell> {
 	private:
 		ExcelRange* parent= NULL; //pointer to the range 
 	public: 
-	
-		ExcelCell(ExcelRange &parent,VARIANT appObj);
-		ExcelCell(VARIANT appObj);
 		~ExcelCell();
+		ExcelCell(ExcelRange &parent,VARIANT appObj); //Classic constructor
+		ExcelCell(VARIANT appObj);//Constructor if parent not important (Some ExcelSheet function directly return cells without range setted)
+		
 		/*
 			Here we must add every method a cell could land 
 		*/
-		Upp::String Value();
+		
+		Upp::String Value(); //Get the Value of the cells
 		bool Value(Upp::String value);//Set value of Cells
 		bool Value(int value);//Set value of Cells
 		

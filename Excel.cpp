@@ -1,6 +1,4 @@
 #include <Core/Core.h>
-
-
 #include <windows.h>
 #include <ole2.h>
 #include <stdio.h>
