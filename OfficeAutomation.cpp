@@ -10,7 +10,7 @@
 #define DISP_NOSHOWEXCEPTIONS 0x02
 
 using namespace Upp;
-
+/*
 //Fonction reprise de MSDN
 HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, int cArgs...)
 {
@@ -129,7 +129,99 @@ HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLEST
     delete [] pArgs;
 
     return hr;
+}*/
+
+
+//This function come from MSDN and have been Change By Clément Hamon
+HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp)
+{
+    if(!pDisp)
+        {
+        MessageBox(NULL, "NULL IDispatch passed to AutoWrap()", "Error", 0x10010);
+        _exit(0);
+    }
+
+    // Variables used...
+    DISPID dispID;
+    HRESULT hr;
+    char buf[200];
+    char szName[200];
+
+    // Convert down to ANSI
+    WideCharToMultiByte(CP_ACP, 0, ptName, -1, szName, 256, NULL, NULL);
+
+    // Get DISPID for name passed...
+    hr = pDisp->GetIDsOfNames(IID_NULL, &ptName, 1, LOCALE_USER_DEFAULT, &dispID);
+    if(FAILED(hr))
+        {
+        sprintf(buf, "IDispatch::GetIDsOfNames(\"%s\") failed w/err 0x%08lx", szName, hr);
+        MessageBox(NULL, buf, "AutoWrap()", 0x10010);
+      	// throw 1;
+        //_exit(0);
+        return hr;
+    }
+
+    // Make the call!
+    hr = pDisp->Invoke(dispID, IID_NULL, LOCALE_SYSTEM_DEFAULT, autoType, &dp, pvResult, NULL, NULL);
+    if(FAILED(hr))
+        {
+                sprintf(buf, "IDispatch::Invoke(\"%s\"=%08lx) failed w/err 0x%08lx",
+                        szName, dispID, hr);
+                       // throw 1;
+                MessageBox(NULL, buf, "AutoWrap()", 0x10010);
+                switch(hr)
+                {
+                case DISP_E_BADPARAMCOUNT:
+                     //	throw 1;
+                        MessageBox(NULL, "DISP_E_BADPARAMCOUNT", "Error:", 0x10010);
+                        break;
+                case DISP_E_BADVARTYPE:
+                    //	 throw 1;
+                        MessageBox(NULL, "DISP_E_BADVARTYPE", "Error:", 0x10010);
+                        break;
+                case DISP_E_EXCEPTION:
+                    //	 throw 1;
+                        MessageBox(NULL, "DISP_E_EXCEPTION", "Error:", 0x10010);
+                        break;
+                case DISP_E_MEMBERNOTFOUND:
+                     //	throw 1;
+                        MessageBox(NULL, "DISP_E_MEMBERNOTFOUND", "Error:", 0x10010);
+                        break;
+                case DISP_E_NONAMEDARGS:
+                    	// throw 1;
+                        MessageBox(NULL, "DISP_E_NONAMEDARGS", "Error:", 0x10010);
+                        break;
+                case DISP_E_OVERFLOW:
+                     //	throw 1;
+                        MessageBox(NULL, "DISP_E_OVERFLOW", "Error:", 0x10010);
+                        break;
+                case DISP_E_PARAMNOTFOUND:
+                    	// throw 1;
+                        MessageBox(NULL, "DISP_E_PARAMNOTFOUND", "Error:", 0x10010);
+                        break;
+                case DISP_E_TYPEMISMATCH:
+                    	// throw 1;
+                        MessageBox(NULL, "DISP_E_TYPEMISMATCH", "Error:", 0x10010);
+                        break;
+                case DISP_E_UNKNOWNINTERFACE:
+                     //	throw 1;
+                        MessageBox(NULL, "DISP_E_UNKNOWNINTERFACE", "Error:", 0x10010);
+                        break;
+                case DISP_E_UNKNOWNLCID:
+                    //	 throw 1;
+                        MessageBox(NULL, "DISP_E_UNKNOWNLCID", "Error:", 0x10010);
+                        break;
+                case DISP_E_PARAMNOTOPTIONAL:
+                    //	 throw 1;
+                        MessageBox(NULL, "DISP_E_PARAMNOTOPTIONAL", "Error:", 0x10010);
+                        break;
+                }
+                // _exit(0);
+                return hr;
+        }
+    return hr;
 }
+
 
 //conversion BSTR to CHAR
 Upp::String Ole::BSTRtoString (BSTR bstr)
@@ -199,7 +291,19 @@ VARIANT Ole::AllocateInt(int myVar){
 VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
 {
 	try{
-		return this->GetAttribute(this->AppObj,attributeName);
+		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[0];
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 0;
+	    dp.rgvarg = pArgs;
+
+		AutoWrap(DISPATCH_PROPERTYGET,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
+		return buffer;
 	}catch(...){
 		throw;	
 	}
@@ -208,17 +312,47 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attrib
 bool Ole::SetAttribute(Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
 {
 	try{
-		this->SetAttribute(this->AppObj,attributeName,value);
+		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    DISPID dispidNamed = DISPID_PROPERTYPUT;
+	
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs[0] = AllocateString(value);
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 1;
+	    dp.rgvarg = pArgs;
+        dp.cNamedArgs = 1;
+        dp.rgdispidNamedArgs = &dispidNamed;
+	    
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
 		return true;
 	}catch(...){
 		throw;	
 	}
 }
+
 bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attribute Value
 {
 	try{
 		VARIANT buffer={0};
-		this->SetAttribute(this->AppObj,attributeName,value);
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    DISPID dispidNamed = DISPID_PROPERTYPUT;
+	
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs[0] =AllocateInt(value);
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 1;
+	    dp.rgvarg = pArgs;
+	    dp.cNamedArgs = 1;
+	    dp.rgdispidNamedArgs = &dispidNamed;
+	    
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
 		return true;
 	}catch(...){
 		throw;	
@@ -228,9 +362,25 @@ bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attr
 VARIANT Ole::ExecuteMethode(Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
 {
 	try{
-		va_list vl;
-		va_start(vl,cArgs);
-		return this->ExecuteMethode(this->AppObj,methodName,cArgs,va_arg(vl,VARIANT));
+		va_list marker;
+    	va_start(marker, cArgs);
+		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+   
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    // Extract arguments...
+	    for(int i=0; i<cArgs; i++)
+	    {
+	        pArgs[i] = va_arg(marker, VARIANT);
+	    }
+	    va_end(marker);
+	    // Build DISPPARAMS
+	    dp.cArgs = cArgs;
+	    dp.rgvarg = pArgs;
+		AutoWrap(DISPATCH_METHOD,&buffer,this->AppObj.pdispVal,(wchar_t*)~methodName,dp);
+		delete [] pArgs;
+		return buffer;
 	}catch(...){
 		throw;
 	}
@@ -241,7 +391,17 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to
 {
 	try{
 		VARIANT buffer={0};
-		AutoWrap(DISPATCH_PROPERTYGET,&buffer,variant.pdispVal,(wchar_t*)~attributeName,0);
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[0];
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 0;
+	    dp.rgvarg = pArgs;
+
+		AutoWrap(DISPATCH_PROPERTYGET,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
 		return buffer;
 	}catch(...){
 		throw;	
@@ -252,7 +412,21 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String v
 {
 	try{
 		VARIANT buffer={0};
-		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateString(value));
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    DISPID dispidNamed = DISPID_PROPERTYPUT;
+	
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs[0] = AllocateString(value);
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 1;
+	    dp.rgvarg = pArgs;
+        dp.cNamedArgs = 1;
+        dp.rgdispidNamedArgs = &dispidNamed;
+	    
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
 		return true;
 	}catch(...){
 		throw;	
@@ -262,7 +436,21 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//A
 {
 	try{
 		VARIANT buffer={0};
-		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,1,AllocateInt(value));
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    DISPID dispidNamed = DISPID_PROPERTYPUT;
+	
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs[0] =AllocateInt(value);
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 1;
+	    dp.rgvarg = pArgs;
+        dp.cNamedArgs = 1;
+        dp.rgdispidNamedArgs = &dispidNamed;
+        
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
 		return true;
 	}catch(...){
 		throw;	
@@ -272,10 +460,24 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//A
 VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
 {
 	try{
-		va_list vl;
-		va_start(vl,cArgs);
+		va_list marker;
+    	va_start(marker, cArgs);
 		VARIANT buffer={0};
-		AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,cArgs,va_arg(vl,VARIANT ));
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    // Extract arguments...
+	    for(int i=0; i<cArgs; i++)
+	    {
+	        pArgs[i] = va_arg(marker, VARIANT);
+	    }
+	    va_end(marker);
+	    // Build DISPPARAMS
+	    dp.cArgs = cArgs;
+	    dp.rgvarg = pArgs;
+		AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,dp);
+		delete [] pArgs;
 		return buffer;
 	}catch(...){
 		throw;
@@ -284,10 +486,23 @@ VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...
 
 VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
 	try{
-		va_list vl;
-		va_start(vl,cArgs);
+		va_list marker;
+    	va_start(marker, cArgs);
 		VARIANT buffer={0};
-		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,AppObj.pdispVal,(wchar_t*)~attributeName,cArgs,va_arg(vl,VARIANT ));
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    // Extract arguments...
+	    for(int i=0; i<cArgs; i++)
+	    {
+	        pArgs[i] = va_arg(marker, VARIANT);
+	    }
+	    va_end(marker);
+	    // Build DISPPARAMS
+	    dp.cArgs = cArgs;
+	    dp.rgvarg = pArgs;
+		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,AppObj.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
 		return buffer;
 	}catch(...){
 		throw;
@@ -295,10 +510,24 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
 }
 VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...){
   	try{
-		va_list vl;
-		va_start(vl,cArgs);
-		VARIANT buffer={0};
-		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~attributeName,cArgs,va_arg(vl,VARIANT ));
+  		va_list marker;
+    	va_start(marker, cArgs);
+  		// Variables used...
+  		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    // Allocate memory for arguments...
+	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    // Extract arguments...
+	    for(int i=0; i<cArgs; i++)
+	    {
+	        pArgs[i] = va_arg(marker, VARIANT);
+	    }
+	    va_end(marker);
+	    // Build DISPPARAMS
+	    dp.cArgs = cArgs;
+	    dp.rgvarg = pArgs;
+		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
 		return buffer;
 	}catch(...){
 		throw;

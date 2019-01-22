@@ -289,7 +289,7 @@ ExcelRange ExcelSheet::Range(Upp::String range){
 ExcelRange ExcelSheet::Cells(int ligne, int colonne){
 	char range[50];
 	IndToStr(ligne,colonne,range);
-	return this->Range(Upp::String(range));
+	return ExcelRange(*this, GetAttribute(GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"Cells",2, AllocateInt(1),AllocateInt(1))); 
 }
 
 int ExcelSheet::GetRowNumberOfMySheet(){
@@ -311,6 +311,17 @@ int ExcelSheet::GetLastRow(Upp::String Colonne){
 	return this->GetAttribute(this->GetAttribute(this->GetAttribute("Range",1,AllocateString(finalRange)),"End",1,AllocateInt(-4121)),L"Row").intVal;	
 }
 
+ExcelRange ExcelSheet::GetCurrentRegion(){
+	return ExcelRange(*this,GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"));
+}
+
+Upp::String ExcelRange::Value(){ //Return value of range
+	return BSTRtoString(GetAttribute("Value").bstrVal);		
+}
+
+bool ExcelRange::Value(Upp::String value){//Set value of range
+	return SetAttribute("Value",value);
+}
 
 
 ExcelSheet::ExcelSheet(ExcelWorkbook& parent, VARIANT appObj){
