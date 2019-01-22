@@ -7,7 +7,7 @@ Project created 01/18/2019
 By Clément Hamon Email: hamon.clement@outlook.fr
 Lib used to drive every Microsoft Application's had OLE Compatibility.
 This project have to be used with Ultimate++ FrameWork and required the Core Librairy from it
-
+http://www.ultimatepp.org
 Copyright © 1998, 2019 Ultimate++ team
 All those sources are contained in "plugin" directory. Refer there for licenses, however all libraries have BSD-compatible license.
 Ultimate++ has BSD license:
