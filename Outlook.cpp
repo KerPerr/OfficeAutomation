@@ -83,15 +83,56 @@ bool OutlookApp::Quit(){//Close current Outlook Application
 }
 
 bool OutlookApp::FindApplication(){ //Find First current Outlook Application still openned
-	
+		if(!this->OutlookIsStarted){
+		CLSID clsExcelApp;
+		VARIANT xlApp = {0};
+
+	   if(FAILED(CLSIDFromProgID(WS_ExcelApp, &clsExcelApp))) {
+	      this->OutlookIsStarted=false;
+	      return false;
+	   }
+	   IUnknown *pUnk;
+	   HWND hExcelMainWnd = 0;
+	   hExcelMainWnd = FindWindow("OLMAIN",NULL);
+	   if(hExcelMainWnd) {
+		   SendMessage(hExcelMainWnd,WM_USER + 18, 0, 0);
+			HRESULT hr2 = GetActiveObject(clsExcelApp,NULL,(IUnknown**)&pUnk);
+			if (!FAILED(hr2)) {
+				hr2=pUnk->QueryInterface(IID_IDispatch, (void **)&xlApp.pdispVal);
+				if (!xlApp.ppdispVal) {
+					this->OutlookIsStarted=false;
+					return false;
+				}
+			}
+			if (pUnk) pUnk->Release();
+		}
+		else {
+			this->OutlookIsStarted=false;
+			return false;
+		}
+		this->AppObj = xlApp;
+		this->OutlookIsStarted=true;
+		return true;
+			
+	}
+	return false;
 }
 
 bool OutlookApp::SetVisible(bool set){ //Set or not the application visible 
-	
+	if(this->OutlookIsStarted){
+		try{
+			this->SetAttribute("Visible",(int)set);
+			return true;
+		}catch(OleException const& exception){
+			throw exception;
+		}
+	}
+	return false;
 }
 
 OutlookSession::OutlookSession(OutlookApp& parent, VARIANT appObj){
-	
+	this->AppObj = appObj;
+	this->parent = &parent;
 }
 
 OutlookSession::~OutlookSession(){

@@ -27,7 +27,7 @@ class OutlookApp : public Ole {
 		OutlookApp(); //Initialise COM
 		~OutlookApp(); //Unitialise COM
 		
-		session* GetSession();
+		OutlookSession* GetSession();
 		
 		bool Start(); //Start new Outlook Application
 		bool FindOrStart(); //Find running Outlook or Start new One
@@ -45,6 +45,6 @@ class OutlookSession : public Ole{
 	public:
 		OutlookSession(OutlookApp& parent, VARIANT appObj); 
 		~OutlookSession(); 
-}
+};
 
 #endif
