@@ -14,6 +14,7 @@ public:
 	WordApp* app;
 	Upp::String GetText();
 	bool Close();
+	bool Close(bool save);
 	typedef WordDocument CLASSNAME;
 	WordDocument(WordApp &app, VARIANT);
 	WordDocument(const WordDocument&);
