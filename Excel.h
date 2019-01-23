@@ -55,6 +55,7 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 		bool isOpenned = false; //This bool must be useless But I prefere to have in case of object is still present in memory by a missing unreferenced pointer
 	public:
 		ExcelApp*const GetParent()const; //Getter on parent pointer
+		const Upp::Vector<ExcelSheet>& GetVector()const; //Return vector
 		
 		ExcelWorkbook(); //Classic constructor
 		~ExcelWorkbook();//Classic destructor
@@ -72,10 +73,7 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 		ExcelSheet AddSheet(); //Create new Sheet with default Name
 		ExcelSheet AddSheet(Upp::String sheetName); //Create new Sheet with defined name 
 		
-		bool ResolveSheet(); //Function that calculate all the sheet on openned workbook
-	
-		
-		
+		bool ResolveSheet(); //Function that calculate all the sheet on openned workbook	
 };
 
 class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{

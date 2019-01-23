@@ -196,6 +196,9 @@ bool ExcelApp::RemoveAWorkbookFromVector(ExcelWorkbook* wb){// remove workbook f
 ExcelApp*const ExcelWorkbook::GetParent()const{//Getter on parent pointer
 	return parent;
 }
+const Vector<ExcelSheet>& ExcelWorkbook::GetVector()const{
+	return this->sheets;
+}
 
 ExcelWorkbook::ExcelWorkbook(){//Classic constructor
 }
@@ -206,6 +209,8 @@ ExcelWorkbook::~ExcelWorkbook(){//Classic destructor
 ExcelWorkbook::ExcelWorkbook(const ExcelWorkbook& e){ //Copy constructor.
 	this->AppObj = e.AppObj;
 	this->parent = e.GetParent();
+	this->isOpenned = true;
+	this->sheets = Vector<ExcelSheet>(e.GetVector(),e.GetVector().GetCount());
 }
 
 ExcelWorkbook::ExcelWorkbook(ExcelApp& myApp, VARIANT appObj){//Basic constructor
