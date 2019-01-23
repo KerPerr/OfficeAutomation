@@ -109,11 +109,23 @@ Upp::String WordDocument::GetText()
 	return BSTRtoString(this->GetAttribute(this->GetAttribute(L"Content"), L"Text").bstrVal);
 }
 
-bool WordDocument::Close() // ALWAYS SAVE !
+bool WordDocument::Close()
 {
 	try {
 		if(app->RemoveDocument(*this))
-			this->ExecuteMethode(L"Close", 0);
+			this->ExecuteMethode(L"Close", 1, AllocateInt(-2));
+		return true;
+	} catch(...) {
+		return false;
+	}
+}
+
+bool WordDocument::Close(bool save)
+{
+	int arg = save ? -1 : 0;
+	try {
+		if(app->RemoveDocument(*this))
+			this->ExecuteMethode(L"Close", 1, AllocateInt(arg));
 		return true;
 	} catch(...) {
 		return false;
