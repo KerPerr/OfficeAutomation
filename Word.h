@@ -10,23 +10,25 @@ class WordApp;
 class WordDocument;
 
 class WordDocument : public Ole, Upp::Moveable<WordDocument> {
-	WordApp* app;
 public:
+	WordApp* app;
 	Upp::String GetText();
-	bool Close(int save);
+	bool Close();
 	typedef WordDocument CLASSNAME;
 	WordDocument(WordApp &app, VARIANT);
+	WordDocument(const WordDocument&);
+	bool operator==(const WordDocument&);
 };
 
 class WordApp : public Ole {
 private:
-	bool WordIsStarted; //Bool to know if we started Word
+	bool isStarted; //Bool to know if we started Word
 public:
-	int Count();
 	Upp::Vector<WordDocument> docs;
-	WordDocument* AddDocument();
-	WordDocument* OpenDocument(Upp::String path);
-	bool RemoveDocument(WordDocument* wdoc);
+	int Count();
+	WordDocument AddDocument();
+	WordDocument OpenDocument(Upp::String path);
+	bool RemoveDocument(WordDocument wdoc);
 	bool SetVisible(bool isVisible);
 	bool Start();
 	bool Quit();

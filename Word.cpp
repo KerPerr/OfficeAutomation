@@ -1,30 +1,8 @@
 #include "Word.h"
 #include <ole2.h>
 
-WordDocument::WordDocument(WordApp &app, VARIANT doc)
-{
-	this->app = &app;
-	this->AppObj = doc;
-}
-
-Upp::String WordDocument::GetText()
-{
-	return BSTRtoString(this->GetAttribute(this->GetAttribute(L"Content"), L"Text").bstrVal);
-}
-
-bool WordDocument::Close(int save) // ALWAYS SAVE !
-{
-	try {
-		if(app->RemoveDocument(this))
-			this->ExecuteMethode(L"Close", 1, AllocateInt(save));
-		return true;
-	} catch(...) {
-		return false;
-	}
-}
-
 WordApp::WordApp(){
-	this->WordIsStarted=false;
+	this->isStarted=false;
 	CoInitialize(NULL);
 }
 
@@ -34,10 +12,10 @@ WordApp::~WordApp(){
 
 bool WordApp::Start() //Start new Word Application
 {
-	if(!this->WordIsStarted){
+	if(!this->isStarted){
 		this->AppObj = this->StartApp(WS_WordApp);
 		if( this->AppObj.intVal != -1){
-			this->WordIsStarted=true;
+			this->isStarted=true;
 			return true;
 		}
 		return false;
@@ -47,7 +25,7 @@ bool WordApp::Start() //Start new Word Application
 
 bool WordApp::Quit() //Close current Word Application
 {
-	if(this->WordIsStarted){
+	if(this->isStarted){
 		try{
 			this->ExecuteMethode("Quit",0);
 			return true;
@@ -63,30 +41,29 @@ int WordApp::Count()
 	return docs.GetCount();
 }
 
-WordDocument* WordApp::AddDocument()
+WordDocument WordApp::AddDocument()
 {
 	try {
-		return &this->docs.Add(WordDocument(*this, this->ExecuteMethode(this->GetAttribute(L"Documents"), L"Add", 0)));
+		return this->docs.Add(WordDocument(*this, this->ExecuteMethode(this->GetAttribute(L"Documents"), L"Add", 0)));
 	} catch (...) {
 		Upp::Cout() << "Error Add Document";
 	}
 }
 
-WordDocument* WordApp::OpenDocument(Upp::String path)
+WordDocument WordApp::OpenDocument(Upp::String path)
 {
 	try {
-		return &this->docs.Add(WordDocument(*this, this->ExecuteMethode(this->GetAttribute(L"Documents"), L"Open", 1, AllocateString(path))));
+		return this->docs.Add(WordDocument(*this, this->ExecuteMethode(this->GetAttribute(L"Documents"), L"Open", 1, AllocateString(path))));
 	} catch (...) {
 		Upp::Cout() << "Error Open Document";
 	}
 }
 
-bool WordApp::RemoveDocument(WordDocument* wdoc){
+bool WordApp::RemoveDocument(WordDocument wdoc){
     bool trouver = false;
-    Upp::Cout() << docs.GetCount() << '\n';
     for(int i=0;i<docs.GetCount();i++){
-        Upp::Cout() << wdoc <<  ":" << &docs[i] <<"\n";
-        if( wdoc == &docs[i]){
+        if(wdoc == docs[i]){
+            trouver = true;
 			docs.Remove(i);
             break;
         }
@@ -96,7 +73,7 @@ bool WordApp::RemoveDocument(WordDocument* wdoc){
 
 bool WordApp::SetVisible(bool set)//Set or not the application visible
 {
-	if(this->WordIsStarted){
+	if(this->isStarted){
 		try{
 			this->SetAttribute("Visible",(int)set);
 			return true;
@@ -105,4 +82,40 @@ bool WordApp::SetVisible(bool set)//Set or not the application visible
 		}
 	}
 	return false;
+}
+
+WordDocument::WordDocument(WordApp &app, VARIANT doc)
+{
+	this->app = &app;
+	this->AppObj = doc;
+}
+
+WordDocument::WordDocument(const WordDocument& a){
+    this->app = a.app;
+    this->AppObj = a.AppObj;
+}
+
+bool WordDocument::operator==(const WordDocument& wdoc)
+{
+	if(this->AppObj.pdispVal == wdoc.AppObj.pdispVal) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+Upp::String WordDocument::GetText()
+{
+	return BSTRtoString(this->GetAttribute(this->GetAttribute(L"Content"), L"Text").bstrVal);
+}
+
+bool WordDocument::Close() // ALWAYS SAVE !
+{
+	try {
+		if(app->RemoveDocument(*this))
+			this->ExecuteMethode(L"Close", 0);
+		return true;
+	} catch(...) {
+		return false;
+	}
 }
