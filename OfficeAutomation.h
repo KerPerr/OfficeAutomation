@@ -80,6 +80,8 @@ class OleException : std::exception { //classe to managed every OLE exception
 	    int m_niveau;               //level of Error  0=> Invoque problem; 1 => Exception from OLE ; 2 => Exception from VARIANT Wrapper
 };
 #include "Excel.h"
+#include "Word.h"
+#include "Outlook.h"
 
 
 #endif

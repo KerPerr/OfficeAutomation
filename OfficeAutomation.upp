@@ -7,6 +7,8 @@ file
 	Outlook.h,
 	Outlook.cpp,
 	OfficeAutomation.h,
+	Word.cpp,
+	Word.h,
 	OfficeAutomation.cpp,
 	src.tpp;
 
