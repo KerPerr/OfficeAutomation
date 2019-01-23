@@ -4,6 +4,8 @@ uses
 file
 	Excel.cpp,
 	Excel.h,
+	Outlook.h,
+	Outlook.cpp,
 	OfficeAutomation.h,
 	OfficeAutomation.cpp,
 	src.tpp;

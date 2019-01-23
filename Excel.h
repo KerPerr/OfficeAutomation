@@ -45,6 +45,8 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		ExcelWorkbook* OpenWorkbook(Upp::String FilePath); //Find and Open Workbook by FilePath
 		
 		int GetNumberOfWorkbook(); //Return number of workbook currently openned on this excel App
+		
+		bool RemoveAWorkbookFromVector(ExcelWorkbook* wb); // remove workbook from vector
 	
 };
 

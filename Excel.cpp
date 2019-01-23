@@ -255,9 +255,24 @@ bool ExcelWorkbook::SaveAs(Upp::String filePath){//Save current workbook at file
 	}
 	return false;
 }
+bool ExcelApp::RemoveAWorkbookFromVector(ExcelWorkbook* wb){
+	bool trouver = false;
+	int i =0;
+	for(i= 0; i < workbooks.GetCount(); i++){
+		Cout() << wb <<  ":" << &workbooks[i] <<"\n";
+		if( wb == &workbooks[i]){
+			trouver = true;
+			break;
+		}
+	}
+	if(trouver) workbooks.Remove(i);
+	return trouver;
+}
+
 bool ExcelWorkbook::Close(){//Close current workbook
 	if(this->isOpenned){
 		try{
+			parent->RemoveAWorkbookFromVector(this);
 			ExecuteMethode("Close",1,AllocateInt(0));
 			return true;
 		}catch(OleException const& exception){

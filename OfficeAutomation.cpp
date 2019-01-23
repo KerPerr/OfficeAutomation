@@ -433,9 +433,12 @@ int Ole::ColStrToInt(Upp::String target){
 	for(int i = 0; i < target.GetCount(); i++){	
 		if((int)toupper(target[i]) >64 && 	(int)toupper(target[i]) < 91){
 			if (i>0) {
-				resultat+=25;
+				resultat+= 26 *((int)toupper(target[i]) -64);
 			}
-			resultat+= ((int)toupper(target[i]) -64);
+			else
+			{
+				resultat+= ((int)toupper(target[i]) -64);
+			}
 		}
 	}
 	return resultat;
@@ -446,7 +449,7 @@ int Ole::ExtractRow(Upp::String target)
 	char myRow[target.GetCount()];
 	int iterator = 0;
 	for(int i = 0; i < target.GetCount(); i++){	
-		if( int(target[i]) >47 && int(target[i]) < 57){
+		if( int(target[i]) >47 && int(target[i]) < 58){
 			myRow[iterator] = target[i];
 			iterator++;
 		}
