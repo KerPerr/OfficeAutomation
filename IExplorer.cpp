@@ -1,15 +1,15 @@
-#include "InternetExplorer.h"
+#include "IExplorer.h"
 
-InternetExplorer::InternetExplorer(){
+IExplorer::IExplorer(){
 	this->isStarted=false;
 	CoInitialize(NULL);
 }
 
-InternetExplorer::~InternetExplorer(){
+IExplorer::~IExplorer(){
 	CoUninitialize();
 }
 
-bool InternetExplorer::Start() //Start new InternetExplorer Application
+bool IExplorer::Start() //Start new InternetExplorer Application
 {
 	if(!this->isStarted){
 		this->AppObj = this->StartApp(WS_InternetExplorerApp);
@@ -22,7 +22,7 @@ bool InternetExplorer::Start() //Start new InternetExplorer Application
 	return false;
 }
 
-bool InternetExplorer::FindApplication(){ //Find First current Excel Application still openned
+bool IExplorer::FindApplication(){ //Find First current Excel Application still openned
 	if(!this->isStarted){
 		CLSID clsExcelApp;
 		VARIANT xlApp = {0};
@@ -33,12 +33,12 @@ bool InternetExplorer::FindApplication(){ //Find First current Excel Application
 		}
 		IUnknown *pUnk;
 		HWND hExcelMainWnd = 0;
-		hExcelMainWnd = FindWindow("TabThumbnailWindow",NULL);
+		hExcelMainWnd = FindWindowA(NULL, "Survey Builder Tool - Internet Explorer");
 		if(hExcelMainWnd) {
 			SendMessage(hExcelMainWnd,WM_USER + 18, 0, 0);
 			HRESULT hr2 = GetActiveObject(clsExcelApp,NULL,(IUnknown**)&pUnk);
 			if (!FAILED(hr2)) {
-			hr2=pUnk->QueryInterface(IID_IDispatch, (void **)&xlApp.pdispVal);
+				hr2=pUnk->QueryInterface(IID_IDispatch, (void **)&xlApp.pdispVal);
 				if (!xlApp.ppdispVal) {
 					this->isStarted=false;
 					return false;
@@ -56,7 +56,7 @@ bool InternetExplorer::FindApplication(){ //Find First current Excel Application
 	return false;
 }
 
-bool InternetExplorer::Quit() //Close current InternetExplorer Application
+bool IExplorer::Quit() //Close current InternetExplorer Application
 {
 	if(this->isStarted){
 		try{
@@ -69,20 +69,20 @@ bool InternetExplorer::Quit() //Close current InternetExplorer Application
 	return false;
 }
 
-bool InternetExplorer::SetVisible(bool set)//Set or not the application visible
+bool IExplorer::SetVisible(bool set)//Set or not the application visible
 {
 	if(this->isStarted){
 		try{
 			this->SetAttribute("Visible",(int)set);
 			return true;
-		}catch(...){
-			return false;
+		}catch(const OleException &e) {
+			throw;
 		}
 	}
 	return false;
 }
 
-Upp::String InternetExplorer::GetCookie()
+Upp::String IExplorer::GetCookie()
 {
 	VARIANT var;
 	Upp::String prop = "Cookies";

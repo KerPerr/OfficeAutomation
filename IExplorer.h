@@ -1,11 +1,11 @@
-#ifndef _OfficeAutomation_InternetExplorer_h_
-#define _OfficeAutomation_InternetExplorer_h_
+#ifndef _OfficeAutomation_IExplorer_h_
+#define _OfficeAutomation_IExplorer_h_
 
 #include "OfficeAutomation.h"
 
-class InternetExplorer;
+class IExplorer;
 
-class InternetExplorer : public Ole {
+class IExplorer : public Ole {
 private:
 	bool isStarted; //Bool to know if we started InternetExplorer
 public:
@@ -14,9 +14,9 @@ public:
 	bool Start();
 	bool FindApplication();
 	bool Quit();
-	typedef InternetExplorer CLASSNAME;
-	InternetExplorer();
-	~InternetExplorer();
+	typedef IExplorer CLASSNAME;
+	IExplorer();
+	~IExplorer();
 };
 
 #endif
