@@ -94,7 +94,7 @@ class OleException : public std::exception { //classe to managed every OLE excep
 #include "Excel.h"
 #include "Word.h"
 #include "Outlook.h"
-#include "InternetExplorer.h"
+#include "IExplorer.h"
 
 
 #endif

@@ -4,14 +4,14 @@ uses
 	Core;
 
 file
-	Excel.cpp,
 	Excel.h,
+	Excel.cpp,
 	Outlook.h,
 	Outlook.cpp,
-	Word.cpp,
 	Word.h,
-	InternetExplorer.cpp,
-	InternetExplorer.h,
+	Word.cpp,
+	IExplorer.h,
+	IExplorer.cpp,
 	OfficeAutomation.h,
 	OfficeAutomation.cpp,
 	src.tpp;
