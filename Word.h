@@ -13,6 +13,7 @@ class WordDocument : public Ole, Upp::Moveable<WordDocument> {
 public:
 	WordApp* app;
 	Upp::String GetText();
+	void SetText(Upp::String text);
 	bool Close();
 	bool Close(bool save);
 	typedef WordDocument CLASSNAME;

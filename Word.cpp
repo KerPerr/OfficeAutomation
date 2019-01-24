@@ -109,6 +109,11 @@ Upp::String WordDocument::GetText()
 	return BSTRtoString(this->GetAttribute(this->GetAttribute(L"Content"), L"Text").bstrVal);
 }
 
+void WordDocument::SetText(Upp::String text)
+{
+	this->SetAttribute(this->GetAttribute(L"Content"), L"Text", text);
+}
+
 bool WordDocument::Close()
 {
 	try {
