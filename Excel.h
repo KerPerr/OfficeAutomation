@@ -21,6 +21,12 @@ class ExcelSheet; //Class represents an Excel WorkSheet
 class ExcelRange; //Class represents an Excel Range
 class ExcelCell; //Class represents  an Excel Cell
 
+typedef ExcelApp Excel;
+typedef ExcelWorkbook Workbook;
+typedef ExcelSheet Sheet;
+typedef ExcelRange Range;
+typedef ExcelCell Cell;
+
 class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 	private: 
 		bool ExcelIsStarted; //Bool to know if we started Excel
@@ -42,7 +48,7 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		
 		ExcelWorkbook NewWorkbook(); //Create new Workbook and add it to actual excel Running method
 		ExcelWorkbook OpenWorkbook(Upp::String FilePath); //Find and Open Workbook by FilePath
-		
+	
 		int GetNumberOfWorkbook(); //Return number of workbook currently openned on this excel App
 		bool RemoveAWorkbookFromVector(ExcelWorkbook* wb); // remove workbook from vector
 	
