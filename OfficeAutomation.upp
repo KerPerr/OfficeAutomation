@@ -6,9 +6,9 @@ file
 	Excel.h,
 	Outlook.h,
 	Outlook.cpp,
-	OfficeAutomation.h,
 	Word.cpp,
 	Word.h,
+	OfficeAutomation.h,
 	OfficeAutomation.cpp,
 	src.tpp;
 

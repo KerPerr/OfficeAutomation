@@ -179,7 +179,7 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attrib
 		AutoWrap(DISPATCH_PROPERTYGET,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
 		throw exception;
 	}
@@ -194,7 +194,7 @@ bool Ole::SetAttribute(Upp::WString attributeName, Upp::String value)//Allow to 
 	    DISPID dispidNamed = DISPID_PROPERTYPUT;
 	
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs = new VARIANT[1];
 	    pArgs[0] = AllocateString(value);
 	
 	    // Build DISPPARAMS
@@ -206,9 +206,9 @@ bool Ole::SetAttribute(Upp::WString attributeName, Upp::String value)//Allow to 
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 
@@ -221,7 +221,7 @@ bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attr
 	    DISPID dispidNamed = DISPID_PROPERTYPUT;
 	
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs = new VARIANT[1];
 	    pArgs[0] =AllocateInt(value);
 	
 	    // Build DISPPARAMS
@@ -233,7 +233,7 @@ bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attr
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,this->AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
 		throw exception;
 	}
@@ -249,7 +249,7 @@ VARIANT Ole::ExecuteMethode(Upp::WString methodName,int cArgs...)//Allow to exec
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
    
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    pArgs = new VARIANT[cArgs+1];
 	    // Extract arguments...
 	    for(int i=0; i<cArgs; i++)
 	    {
@@ -264,7 +264,7 @@ VARIANT Ole::ExecuteMethode(Upp::WString methodName,int cArgs...)//Allow to exec
 		return buffer;
 	}catch(OleException const& exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 
@@ -277,7 +277,7 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
 
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[0];
+	    pArgs = new VARIANT[0];
 	
 	    // Build DISPPARAMS
 	    dp.cArgs = 0;
@@ -286,7 +286,7 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to
 		AutoWrap(DISPATCH_PROPERTYGET,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
 		throw exception;
 	}
@@ -301,7 +301,7 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String v
 	    DISPID dispidNamed = DISPID_PROPERTYPUT;
 	
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs = new VARIANT[1];
 	    pArgs[0] = AllocateString(value);
 	
 	    // Build DISPPARAMS
@@ -313,9 +313,9 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String v
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//Allow to set attribute Value
@@ -327,7 +327,7 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//A
 	    DISPID dispidNamed = DISPID_PROPERTYPUT;
 	
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[1];
+	    pArgs = new VARIANT[1];
 	    pArgs[0] =AllocateInt(value);
 	
 	    // Build DISPPARAMS
@@ -339,7 +339,7 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//A
 		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return true;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
 		throw exception;
 	}
@@ -355,7 +355,7 @@ VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
 
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    pArgs = new VARIANT[cArgs+1];
 	    // Extract arguments...
 	    for(int i=0; i<cArgs; i++)
 	    {
@@ -368,9 +368,9 @@ VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...
 		AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 
@@ -382,7 +382,7 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
 		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    pArgs = new VARIANT[cArgs+1];
 	    // Extract arguments...
 	    for(int i=0; i<cArgs; i++)
 	    {
@@ -395,7 +395,7 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
 		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,AppObj.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
 		throw exception;
 	}
@@ -409,7 +409,7 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs..
   		VARIANT buffer={0};
 	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
 	    // Allocate memory for arguments...
-	    VARIANT *pArgs = new VARIANT[cArgs+1];
+	    pArgs = new VARIANT[cArgs+1];
 	    // Extract arguments...
 	    for(int i=0; i<cArgs; i++)
 	    {
@@ -422,9 +422,9 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs..
 		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~attributeName,dp);
 		delete [] pArgs;
 		return buffer;
-	}catch(OleException const& exception){
+	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 

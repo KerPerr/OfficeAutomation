@@ -65,19 +65,31 @@ class Ole {
 		
 };
 
-class OleException : std::exception { //classe to managed every OLE exception
-	public:
-	    OleException(int numero=0, Upp::String const& phrase="", int niveau=0) throw()
-	         :m_numero(numero),m_phrase(phrase),m_niveau(niveau)
-	    {}
-	    virtual const char* what() const throw(){return m_phrase.ToStd().c_str();}
-	    int getNiveau() const throw(){return m_niveau;}
-		virtual ~OleException() throw(){}
-
+class OleException : public std::exception { //classe to managed every OLE exception
 	private:
 	    int m_numero;               //Id of Error
 	    Upp::String m_phrase;       //Error summaries
 	    int m_niveau;               //level of Error  0=> Invoque problem; 1 => Exception from OLE ; 2 => Exception from VARIANT Wrapper
+	    char* myChar=NULL;
+
+	public:
+	    OleException(int numero=0, Upp::String phrase="", int niveau=0){
+	        m_numero = numero;
+	        m_phrase = phrase;
+	        m_niveau = niveau;
+	       	myChar =  new char[m_phrase.GetCount()+1];
+	        strcpy(myChar,this->m_phrase.ToStd().c_str());
+	    }
+	    
+	    virtual const char* what() const throw() {
+	       	return  (const char *)  myChar;
+	    }
+	    int getNiveau() const throw(){
+	    	return m_niveau;
+	    }
+		virtual ~OleException(){
+			delete [] myChar;
+		}
 };
 #include "Excel.h"
 #include "Word.h"

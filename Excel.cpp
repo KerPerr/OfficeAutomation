@@ -86,7 +86,7 @@ bool ExcelApp::Quit() //Close current Excel Application
 			this->ExecuteMethode("Quit",0);	
 			return true;
 		}catch(OleException const& exception){
-			throw exception;
+			throw;
 		}
 	}
 	return false;
@@ -134,7 +134,7 @@ bool ExcelApp::SetVisible(bool set)//Set or not the application visible
 			this->SetAttribute("Visible",(int)set);
 			return true;
 		}catch(OleException const& exception){
-			throw exception;
+			throw;
 		}
 	}
 	return false;
@@ -225,7 +225,7 @@ bool ExcelWorkbook::Save(){ //Save current workbook
 			ExecuteMethode("Save",0);
 			return true;
 		}catch(OleException const& exception){
-			throw exception;
+			throw;
 		}
 	}
 	return false;
@@ -237,7 +237,7 @@ bool ExcelWorkbook::SaveAs(Upp::String filePath){//Save current workbook at file
 			ExecuteMethode("SaveAs",1,AllocateString(filePath));
 			return true;
 		}catch(OleException const& exception){
-			throw exception;
+			throw;
 		}
 	}
 	return false;
@@ -250,7 +250,7 @@ bool ExcelWorkbook::Close(){//Close current workbook
 			ExecuteMethode("Close",1,AllocateInt(0));
 			return true;
 		}catch(OleException const& exception){
-			throw exception;
+			throw;
 		}
 	}
 	return false;
@@ -295,7 +295,7 @@ ExcelSheet ExcelWorkbook::AddSheet(Upp::String sheetName){ //Create new Sheet wi
 			this->sheets[this->sheets.GetCount()-1].SetName(sheetName);
 			return this->sheets[this->sheets.GetCount()-1];
 		}catch(OleException const& exception){
-			throw exception;
+			throw;
 		}
 		return ExcelSheet();
 	}
@@ -327,9 +327,9 @@ ExcelSheet::ExcelSheet(ExcelWorkbook& parent, VARIANT appObj){//Classic construc
 
 bool ExcelSheet::SetName(Upp::String sheetName){//Redefine name of sheet
 	try{
-		return SetAttribute(this->AppObj,"Name",sheetName);
+		return this->SetAttribute(this->AppObj,"Name",sheetName);
 	}catch(OleException const& exception){
-		throw exception;
+		throw;
 	}
 	return false;
 }
