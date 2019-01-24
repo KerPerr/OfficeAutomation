@@ -1,3 +1,5 @@
+description "\377BI226,170,0";
+
 uses
 	Core;
 
@@ -8,6 +10,8 @@ file
 	Outlook.cpp,
 	Word.cpp,
 	Word.h,
+	InternetExplorer.cpp,
+	InternetExplorer.h,
 	OfficeAutomation.h,
 	OfficeAutomation.cpp,
 	src.tpp;

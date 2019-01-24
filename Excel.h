@@ -34,7 +34,7 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		bool FindOrStart(); //Find running Excel or Start new One
 		bool Quit(); //Close current Excel Application
 		
-		bool FindApplication(); //Find First current Excel Application still openned
+		bool FindApplication(); //Find First current Excel Application openned
 		bool SetVisible(bool set); //Set or not the application visible 
 		
 		ExcelWorkbook Workbooks(int index); //Allow to retrieve workbook by is index 

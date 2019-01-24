@@ -181,7 +181,7 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName) //Allow to retrieve attrib
 		return buffer;
 	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 		
@@ -235,7 +235,7 @@ bool Ole::SetAttribute(Upp::WString attributeName, int value)//Allow to set attr
 		return true;
 	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 		
@@ -288,7 +288,7 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to
 		return buffer;
 	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 		
@@ -341,7 +341,7 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//A
 		return true;
 	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 		
@@ -397,7 +397,7 @@ VARIANT Ole::GetAttribute(Upp::WString attributeName,int cArgs...){
 		return buffer;
 	}catch(const OleException & exception){
 		delete [] pArgs;
-		throw exception;
+		throw;
 	}
 }
 VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...){
