@@ -291,6 +291,29 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName) //Allow to
 		throw;
 	}
 }
+VARIANT Ole::GetAttribute(IDispatch* disp,Upp::WString attributeName) //Allow to retrieve attribute Value By VARIANT
+{
+	VARIANT *pArgs;
+	try{
+		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+
+	    // Allocate memory for arguments...
+	    pArgs = new VARIANT[0];
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 0;
+	    dp.rgvarg = pArgs;
+
+		AutoWrap(DISPATCH_PROPERTYGET,&buffer,disp,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
+		return buffer;
+	}catch(const OleException & exception){
+		delete [] pArgs;
+		throw;
+	}
+}
+
 		
 bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
 {
@@ -318,6 +341,34 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String v
 		throw;
 	}
 }
+
+bool Ole::SetAttribute(IDispatch* disp,Upp::WString attributeName, Upp::String value)//Allow to set attribute Value
+{
+	VARIANT *pArgs;
+	try{
+		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    DISPID dispidNamed = DISPID_PROPERTYPUT;
+	
+	    // Allocate memory for arguments...
+	    pArgs = new VARIANT[1];
+	    pArgs[0] = AllocateString(value);
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 1;
+	    dp.rgvarg = pArgs;
+        dp.cNamedArgs = 1;
+        dp.rgdispidNamedArgs = &dispidNamed;
+	    
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,disp,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
+		return true;
+	}catch(const OleException & exception){
+		delete [] pArgs;
+		throw;
+	}
+}
+
 bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//Allow to set attribute Value
 {
 	VARIANT *pArgs;
@@ -344,6 +395,33 @@ bool Ole::SetAttribute(VARIANT variant,Upp::WString attributeName, int value)//A
 		throw;
 	}
 }
+bool Ole::SetAttribute(IDispatch* disp,Upp::WString attributeName, int value)//Allow to set attribute Value
+{
+	VARIANT *pArgs;
+	try{
+		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    DISPID dispidNamed = DISPID_PROPERTYPUT;
+	
+	    // Allocate memory for arguments...
+	    pArgs = new VARIANT[1];
+	    pArgs[0] =AllocateInt(value);
+	
+	    // Build DISPPARAMS
+	    dp.cArgs = 1;
+	    dp.rgvarg = pArgs;
+        dp.cNamedArgs = 1;
+        dp.rgdispidNamedArgs = &dispidNamed;
+        
+		AutoWrap(DISPATCH_PROPERTYPUT,&buffer,disp,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
+		return true;
+	}catch(const OleException & exception){
+		delete [] pArgs;
+		throw;
+	}
+}
+
 		
 VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
 {
@@ -366,6 +444,35 @@ VARIANT Ole::ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...
 	    dp.cArgs = cArgs;
 	    dp.rgvarg = pArgs;
 		AutoWrap(DISPATCH_METHOD,&buffer,variant.pdispVal,(wchar_t*)~methodName,dp);
+		delete [] pArgs;
+		return buffer;
+	}catch(const OleException & exception){
+		delete [] pArgs;
+		throw;
+	}
+}
+
+VARIANT Ole::ExecuteMethode(IDispatch* disp,Upp::WString methodName,int cArgs...)//Allow to execute methode attribute retrieve VARIANT
+{
+	VARIANT *pArgs;
+	try{
+		va_list marker;
+    	va_start(marker, cArgs);
+		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+
+	    // Allocate memory for arguments...
+	    pArgs = new VARIANT[cArgs+1];
+	    // Extract arguments...
+	    for(int i=0; i<cArgs; i++)
+	    {
+	        pArgs[i] = va_arg(marker, VARIANT);
+	    }
+	    va_end(marker);
+	    // Build DISPPARAMS
+	    dp.cArgs = cArgs;
+	    dp.rgvarg = pArgs;
+		AutoWrap(DISPATCH_METHOD,&buffer,disp,(wchar_t*)~methodName,dp);
 		delete [] pArgs;
 		return buffer;
 	}catch(const OleException & exception){
@@ -427,6 +534,34 @@ VARIANT Ole::GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs..
 		throw;
 	}
 }
+VARIANT Ole::GetAttribute(IDispatch* disp,Upp::WString attributeName,int cArgs...){
+	VARIANT *pArgs;
+  	try{
+  		va_list marker;
+    	va_start(marker, cArgs);
+  		// Variables used...
+  		VARIANT buffer={0};
+	    DISPPARAMS dp = { NULL, NULL, 0, 0 };
+	    // Allocate memory for arguments...
+	    pArgs = new VARIANT[cArgs+1];
+	    // Extract arguments...
+	    for(int i=0; i<cArgs; i++)
+	    {
+	        pArgs[i] = va_arg(marker, VARIANT);
+	    }
+	    va_end(marker);
+	    // Build DISPPARAMS
+	    dp.cArgs = cArgs;
+	    dp.rgvarg = pArgs;
+		AutoWrap(DISPATCH_PROPERTYGET|DISPATCH_METHOD,&buffer,disp,(wchar_t*)~attributeName,dp);
+		delete [] pArgs;
+		return buffer;
+	}catch(const OleException & exception){
+		delete [] pArgs;
+		throw;
+	}
+}
+
 
 int Ole::ColStrToInt(Upp::String target){
 	int resultat= 0;

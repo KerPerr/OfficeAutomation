@@ -1,8 +1,15 @@
 #include "IExplorer.h"
 
+#include <time.h>
+#include <comdef.h>
+
+#define TIMEOUT_SECONDS 30
+#define SLEEP_MILLISECONDS 500
+
 IExplorer::IExplorer(){
 	this->isStarted=false;
-	CoInitialize(NULL);
+	CLSID rclsid;
+	OleInitialize (NULL);
 }
 
 IExplorer::~IExplorer(){
@@ -12,84 +19,73 @@ IExplorer::~IExplorer(){
 bool IExplorer::Start() //Start new InternetExplorer Application
 {
 	if(!this->isStarted){
-		this->AppObj = this->StartApp(WS_InternetExplorerApp);
-		if( this->AppObj.intVal != -1){
-			this->isStarted=true;
-			return true;
-		}
-		return false;
-	}
-	return false;
-}
-
-bool IExplorer::FindApplication(){ //Find First current Excel Application still openned
-	if(!this->isStarted){
-		CLSID clsExcelApp;
-		VARIANT xlApp = {0};
-
-		if(FAILED(CLSIDFromProgID(WS_InternetExplorerApp, &clsExcelApp))) {
-			this->isStarted=false;
-			return false;
-		}
-		IUnknown *pUnk;
-		HWND hExcelMainWnd = 0;
-		hExcelMainWnd = FindWindowA(NULL, "Survey Builder Tool - Internet Explorer");
-		if(hExcelMainWnd) {
-			SendMessage(hExcelMainWnd,WM_USER + 18, 0, 0);
-			HRESULT hr2 = GetActiveObject(clsExcelApp,NULL,(IUnknown**)&pUnk);
-			if (!FAILED(hr2)) {
-				hr2=pUnk->QueryInterface(IID_IDispatch, (void **)&xlApp.pdispVal);
-				if (!xlApp.ppdispVal) {
-					this->isStarted=false;
-					return false;
-				}
-			}
-			if (pUnk) pUnk->Release();
-		} else {
-			this->isStarted=false;
-			return false;
-		}
-		this->AppObj = xlApp;
-		this->isStarted=true;
-		return true;
-	}
-	return false;
-}
-
-bool IExplorer::Quit() //Close current InternetExplorer Application
-{
-	if(this->isStarted){
-		try{
-			this->ExecuteMethode("Quit",0);
-			return true;
-		}catch(...){
-			return false;
-		}
-	}
-	return false;
+		CLSID rclsid;
+		if (CLSIDFromProgID(WS_InternetExplorerApp, &rclsid) != S_OK)
+			throw OleException(21, "CLSIDFromProgID", 0);
+		if (CoCreateInstance(rclsid, NULL, CLSCTX_SERVER, IID_IWebBrowser2, (LPVOID*)&ptrWebBrowser) != S_OK)
+			throw OleException(22, "CoCreateInstance", 0);
+		this->isStarted = true;
+		WaitUntilNotBusy();
+		return this->isStarted;
+	} return false;
 }
 
 bool IExplorer::SetVisible(bool set)//Set or not the application visible
 {
 	if(this->isStarted){
-		try{
-			this->SetAttribute("Visible",(int)set);
+		if (ptrWebBrowser->put_Visible(VARIANT_TRUE) != S_OK)
+			return false;
+		else
 			return true;
-		}catch(const OleException &e) {
-			throw;
-		}
 	}
 	return false;
 }
 
-Upp::String IExplorer::GetCookie()
+bool IExplorer::SetSilent(bool set)
 {
-	VARIANT var;
-	Upp::String prop = "Cookies";
-	if(!this->isStarted) {
-		this->ExecuteMethode("GetProperty", 2, AllocateString(prop), &var);
-		return BSTRtoString(var.bstrVal);
-	} else {
-		return "Erreur : Application not running";
+	if(this->isStarted){
+		if (ptrWebBrowser->put_Silent(VARIANT_TRUE) != S_OK)
+			return false;
+		else
+			return true;
 	}
+	return false;
+}
+
+void IExplorer::Navigate (Upp::WString url) {
+	if(this->isStarted){
+		// Ex : url = L"http://castrec-pierre.netlify.com"
+		ptrWebBrowser->Navigate(AllocateString(url).bstrVal, NULL, NULL, NULL, NULL);
+		WaitUntilReady();
+	}
+}
+/*
+Upp::String IExplorer::GetURL()
+{
+	if(this->isStarted){
+		ptrWebBrowser->
+	}
+}
+*/
+void IExplorer::WaitUntilNotBusy () {
+	VARIANT_BOOL busy;
+	time_t startTime = time(NULL);
+	do {
+		Sleep (SLEEP_MILLISECONDS);
+		if (ptrWebBrowser->get_Busy (&busy) != S_OK)
+			throw OleException(24, "get_Busy", 1);
+	} while ((busy==VARIANT_TRUE) && (difftime(time(NULL), startTime)<TIMEOUT_SECONDS));
+	if (busy == VARIANT_TRUE)
+		throw OleException(23, "Timeout while waiting 'get_Busy=false'", 1);
+}
+
+void IExplorer::WaitUntilReady () {
+	READYSTATE isReady;
+	time_t startTime = time(NULL);
+	do {
+		ptrWebBrowser->get_ReadyState(&isReady);
+		Sleep (SLEEP_MILLISECONDS);
+	} while ((isReady!=READYSTATE_COMPLETE) && (difftime(time(NULL), startTime)<TIMEOUT_SECONDS));
+	if (isReady != READYSTATE_COMPLETE)
+		throw OleException(26, "Timeout while waiting READYSTATE_COMPLETE", 1);
 }
