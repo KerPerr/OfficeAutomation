@@ -196,21 +196,25 @@ class Ole {
 		/*******************************************************************/
 		virtual VARIANT GetAttribute(Upp::WString attributeName); //Allow to retrieve attribute Value By VARIANT
 		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName);//Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(IDispatch* pdisp, Upp::WString attributeName);//Allow to retrieve attribute Value By DISPATCHER
 		
 		virtual VARIANT GetAttribute(Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
 		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(IDispatch* pdisp, Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By DISPATCHER
 		
 		virtual bool SetAttribute(Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
 		virtual bool SetAttribute(Upp::WString attributeName, int value);//Allow to set attribute Value
 		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
 		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, int value);//Allow to set attribute Value
+		virtual bool SetAttribute(IDispatch* pdisp,Upp::WString attributeName, int value);//Allow to set attribute Value
+		virtual bool SetAttribute(IDispatch* pdisp,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
 		
 		virtual VARIANT ExecuteMethode(Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
 		virtual VARIANT ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
+		virtual VARIANT ExecuteMethode(IDispatch* pdisp,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
 		
 		virtual void DumpVariant();
 		virtual void DumpVariant(VARIANT variant);
-		
 };
 
 class OleException : public std::exception { //classe to managed every OLE exception
