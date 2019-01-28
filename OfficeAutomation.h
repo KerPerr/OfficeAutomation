@@ -4,6 +4,7 @@
 #include <Core/Core.h>
 #include <windows.h> 
 #include <exception>
+#include <ocidl.h>
 /* 
 Project created 01/18/2019 
 By Clément Hamon And Pierre Castrec
@@ -17,12 +18,151 @@ License : https://www.ultimatepp.org/app$ide$About$en-us.html
 Thanks to UPP team
 */
 
+static const GUID IID_IApplicationEvents2 =  {0x000209FE,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
 class Ole;
+class OleException;
+struct IApplicationEvents2;
+class COfficeEventHandler;
+
+
+struct IApplicationEvents2 : public IDispatch // Pretty much copied from typelib
+{
+/*
+ * IDispatch methods
+ */
+STDMETHODIMP QueryInterface(REFIID riid, void ** ppvObj) = 0; 
+STDMETHODIMP_(ULONG) AddRef()  = 0;  
+STDMETHODIMP_(ULONG) Release() = 0;
+
+STDMETHODIMP GetTypeInfoCount(UINT *iTInfo) = 0;
+STDMETHODIMP GetTypeInfo(UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo) = 0;
+STDMETHODIMP GetIDsOfNames(REFIID riid, OLECHAR **rgszNames, 
+                              UINT cNames,  LCID lcid, DISPID *rgDispId) = 0;
+STDMETHODIMP Invoke(DISPID dispIdMember, REFIID riid, LCID lcid,
+                              WORD wFlags, DISPPARAMS* pDispParams,
+                              VARIANT* pVarResult, EXCEPINFO* pExcepInfo,
+                              UINT* puArgErr) = 0;
+
+/*
+ * IApplicationEvents2 methods
+ */
+STDMETHODIMP Startup();
+STDMETHODIMP Quit();
+STDMETHODIMP DocumentChange();
+};
+
+class COfficeEventHandler : public IApplicationEvents2
+{
+	protected:
+	LONG m_cRef;
+	
+	public:
+	DWORD m_dwEventCookie;
+	
+	COfficeEventHandler(){
+		m_cRef={1};
+		m_dwEventCookie={0};
+	}
+
+	STDMETHOD_(ULONG, AddRef)()
+	{
+		InterlockedIncrement(&m_cRef);
+		return m_cRef;  
+	}
+	
+	STDMETHOD_(ULONG, Release)(){
+		InterlockedDecrement(&m_cRef);
+		if (m_cRef == 0)
+		{
+		    delete this;
+		    return 0;
+	}
+		return m_cRef;
+	}
+	
+	STDMETHOD(QueryInterface)(REFIID riid, void ** ppvObj)
+	{
+	 if (riid == IID_IUnknown){
+	    *ppvObj = static_cast<IApplicationEvents2*>(this);
+	}
+	
+	else if (riid == IID_IApplicationEvents2){
+	    *ppvObj = static_cast<IApplicationEvents2*>(this);
+	}
+	else if (riid == IID_IDispatch){
+	    *ppvObj = static_cast<IApplicationEvents2*>(this);
+	}
+	else
+	{
+	    char clsidStr[256];
+	    WCHAR wClsidStr[256];
+	    char txt[512];
+	    StringFromGUID2(riid, (LPOLESTR)&wClsidStr, 256);
+	    // Convert down to ANSI
+	    WideCharToMultiByte(CP_ACP, 0, wClsidStr, -1, clsidStr, 256, NULL, NULL);
+	    sprintf_s(txt, 512, "riid is : %s: Unsupported Interface", clsidStr);
+	    *ppvObj = NULL;
+	    return E_NOINTERFACE;
+	}
+	
+	static_cast<IUnknown*>(*ppvObj)->AddRef();
+		return S_OK;
+	}
+	
+	STDMETHOD(GetTypeInfoCount)(UINT* pctinfo){
+		return E_NOTIMPL;
+	}
+	
+	STDMETHOD(GetTypeInfo)(UINT itinfo, LCID lcid, ITypeInfo** pptinfo){
+		return E_NOTIMPL;
+	}
+	
+	STDMETHOD(GetIDsOfNames)(REFIID riid, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgdispid){
+		return E_NOTIMPL;
+	}
+	
+	STDMETHOD(Invoke)(DISPID dispidMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS* pdispparams, VARIANT* pvarResult,EXCEPINFO* pexcepinfo, UINT* puArgErr){
+		  //Validate arguments
+	    if ((riid != IID_NULL))
+	        return E_INVALIDARG;
+	    HRESULT hr = S_OK;  // Initialize
+	    /* To see what Word sends as dispid values */
+	    static char myBuf[80];
+	    memset( &myBuf, '\0', 80 );
+	    sprintf_s( (char*)&myBuf, 80, " Dispid: %d :", dispidMember );
+		Upp::Cout() << dispidMember <<"\n";
+	    switch(dispidMember){
+	    case 0x01:    // Startup
+	        Startup();
+	    break;
+	    case 0x02:    // Quit
+	        Quit();
+	    break;
+	    case 0x03:    // DocumentChange
+	        DocumentChange();
+	    break;
+	    }
+	
+	    return S_OK;
+	}
+	
+	// IApplicationEvents2 methods
+	void Startup();
+	void Quit();
+	void DocumentChange();
+};
 
 class Ole {
 	private: 
 		virtual HRESULT AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp);//Allow code execution on whatever object 
+		
 	public:
+		Upp::Thread* EventListener;
+		COfficeEventHandler* sink = new COfficeEventHandler;
+		IUnknown* iu;
+		IConnectionPoint* pConnPoint;
+		IConnectionPointContainer* pConnPntCont;
+		IUnknown* punk; //Basic pointer to object
 		VARIANT AppObj;
 		
 		const Upp::WString WS_ExcelApp = L"Excel.Application"; //MS Excel
@@ -32,7 +172,14 @@ class Ole {
 		const Upp::WString WS_InternetExplorerApp = L"InternetExplorer.Application"; //MS IE
 		const Upp::WString WS_ProdApp = L"InternetExplorer.Application"; // this one is to use in my context, you'r supposed to never use it :p
 		
+		const Upp::WString WS_CLSID_WordApp = L"{000209FE-0000-0000-C000-000000000046}";
+		const Upp::WString WS_CLSID_ExcelApp = L"{00024500-0000-0000-C000-000000000046}";
+		
+		
 		virtual VARIANT StartApp(const Upp::WString appName); 
+		virtual VARIANT FindApp(const Upp::WString appName);
+		virtual void InitSinkCommunication(const Upp::WString appName);
+		
 		virtual Upp::String BSTRtoString (BSTR bstr); //Converting VARIANT.BSTR to Upp::String
 		virtual void IndToStr(int row,int col,char* strResult);//translating row and column number into the string name of the cell.
 		virtual int ColStrToInt(Upp::String target);
@@ -42,6 +189,7 @@ class Ole {
 		virtual VARIANT AllocateString(Upp::WString arg);//Easy way to allocate some data into variant to use it as arg
 		virtual VARIANT AllocateInt(int arg);//Easy way to allocate some data into variant to use it as arg
 		
+		const Upp::WString CLSIDbyName(const Upp::WString appName);
 		/*******************************************************************/
 		// This section allow Free hand execution of code on every object
 		// It mean you must know how VARIANT work to retrieve information you want
@@ -91,6 +239,12 @@ class OleException : public std::exception { //classe to managed every OLE excep
 			delete [] myChar;
 		}
 };
+
+
+
+
+
+
 #include "Excel.h"
 #include "Word.h"
 #include "Outlook.h"

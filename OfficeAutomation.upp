@@ -12,8 +12,8 @@ file
 	Word.cpp,
 	IExplorer.h,
 	IExplorer.cpp,
-	OfficeAutomation.h,
 	OfficeAutomation.cpp,
+	OfficeAutomation.h,
 	src.tpp;
 
 mainconfig

@@ -22,7 +22,7 @@ class OutlookApp : public Ole {
 	private: 
 		bool OutlookIsStarted; //Bool to know if we started Excel
 		OutlookSession* session; //session object
-	
+		Upp::Thread myThread;
 	public:
 		OutlookApp(); //Initialise COM
 		~OutlookApp(); //Unitialise COM

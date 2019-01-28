@@ -21,14 +21,20 @@ Ultimate++ has BSD license:
 License : https://www.ultimatepp.org/app$ide$About$en-us.html
 Thanks to UPP team
 */
+
 /************************************************************************************************************************/
 
 ExcelApp::ExcelApp(){//Initialise COM
+	EventListener = new Thread;
 	this->ExcelIsStarted=false;
 	CoInitialize(NULL);
 }
 
 ExcelApp::~ExcelApp(){//Unitialise COM
+
+ 	pConnPoint->Unadvise( sink->m_dwEventCookie );
+	delete EventListener;
+	delete sink;
 	CoUninitialize();
 }
 
@@ -46,35 +52,12 @@ bool ExcelApp::Start() //Start new Excel Application
 }
 
 bool ExcelApp::FindOrStart(){//Find running Excel or Start new One
-		if(!this->ExcelIsStarted){
-		CLSID clsExcelApp;
-		VARIANT xlApp = {0};
-	   if(FAILED(CLSIDFromProgID(WS_ExcelApp, &clsExcelApp))) {
-	      this->ExcelIsStarted=false;
-	      return this->Start();
-	   }
-	   IUnknown *pUnk;
-	   HWND hExcelMainWnd = 0;
-	   hExcelMainWnd = FindWindow("XLMAIN",NULL);
-	   if(hExcelMainWnd) {
-		   SendMessage(hExcelMainWnd,WM_USER + 18, 0, 0);
-			HRESULT hr2 = GetActiveObject(clsExcelApp,NULL,(IUnknown**)&pUnk);
-			if (!FAILED(hr2)) {
-				hr2=pUnk->QueryInterface(IID_IDispatch, (void **)&xlApp.pdispVal);
-				if (!xlApp.ppdispVal) {
-					this->ExcelIsStarted=false;
-					return this->Start();
-				}
-			}
-			if (pUnk) pUnk->Release();
+	if(!this->ExcelIsStarted){
+		this->AppObj = this->FindApp(WS_ExcelApp);
+		if( this->AppObj.intVal != -1){
+			this->ExcelIsStarted=true;
+			return true;
 		}
-		else {
-			this->ExcelIsStarted=false;
-			return this->Start();
-		}
-		this->AppObj = xlApp;
-		this->ExcelIsStarted=true;
-		return true;
 	}
 	return false;
 }
@@ -108,11 +91,13 @@ bool ExcelApp::FindApplication(){ //Find First current Excel Application still o
 		   SendMessage(hExcelMainWnd,WM_USER + 18, 0, 0);
 			HRESULT hr2 = GetActiveObject(clsExcelApp,NULL,(IUnknown**)&pUnk);
 			if (!FAILED(hr2)) {
+				this->punk = pUnk;		
 				hr2=pUnk->QueryInterface(IID_IDispatch, (void **)&xlApp.pdispVal);
 				if (!xlApp.ppdispVal) {
 					this->ExcelIsStarted=false;
 					return false;
 				}
+				
 			}
 			if (pUnk) pUnk->Release();
 		}
@@ -121,6 +106,7 @@ bool ExcelApp::FindApplication(){ //Find First current Excel Application still o
 			return false;
 		}
 		this->AppObj = xlApp;
+		//InitSinkCommunication();
 		this->ExcelIsStarted=true;
 		return true;	
 	}

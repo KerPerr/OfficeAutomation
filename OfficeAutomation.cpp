@@ -118,6 +118,88 @@ void Ole::IndToStr(int row,int col,char* strResult) {
     }
 }
 
+
+void Ole::InitSinkCommunication(const Upp::WString appName){
+IID id;  
+CLSID clsid;  
+HRESULT hr;
+hr = punk->QueryInterface(IID_IConnectionPointContainer, (void FAR* FAR*)&this->pConnPntCont); 
+hr = IIDFromString(CLSIDbyName(appName),&id);
+hr = pConnPntCont->FindConnectionPoint( id, &pConnPoint );
+hr = sink->QueryInterface( IID_IUnknown, (void FAR* FAR*)&iu);
+hr = pConnPoint->Advise( iu, &sink->m_dwEventCookie );
+
+EventListener->Run([=]{
+  	MSG   msg;
+    BOOL  bRet;
+    while( (bRet = GetMessage( &msg, NULL, 0, 0 )) != 0 )
+    { 
+        if (bRet == -1)
+        {
+            // handle the error and possibly exit
+        }
+        else
+        {
+            TranslateMessage(&msg); 
+            DispatchMessage(&msg); 
+        }
+        Cout() << msg.message <<"\n";
+        if( msg.message == WM_QUERYENDSESSION || msg.message == WM_QUIT || msg.message == WM_DESTROY )
+        {
+            break;
+        }
+    }
+});
+}
+
+const Upp::WString Ole::CLSIDbyName(const Upp::WString appName) {
+	if(appName.Compare(this->WS_ExcelApp)==0)
+		return WS_CLSID_ExcelApp;
+	else if(appName.Compare(this->WS_WordApp)==0)
+		return WS_CLSID_WordApp;
+	return WS_CLSID_ExcelApp;
+}
+
+VARIANT Ole::FindApp(const Upp::WString appName){
+	CLSID clsApp;
+	VARIANT App = {0};
+	
+	HRESULT hr = CLSIDFromProgID(appName, &clsApp); 
+	if(!FAILED(hr)){
+		HRESULT hr2 =GetActiveObject( clsApp, NULL, &punk );
+		if (!FAILED(hr2)) {
+			hr2=punk->QueryInterface(IID_IDispatch, (void **)&App.pdispVal);
+			if (!App.ppdispVal) {
+				return this->StartApp(appName);
+			}
+		}else
+		{
+			return this->StartApp(appName);
+		}
+	}
+	else{
+		return this->StartApp(appName);	
+	}
+	InitSinkCommunication(appName);
+	return App;	
+}
+
+void COfficeEventHandler::Startup()
+{
+    Cout()<< "In Startup\n" ;
+}
+
+void COfficeEventHandler::Quit()
+{
+     Cout()<< "In Quit\n" ;
+}
+
+void COfficeEventHandler::DocumentChange()
+{
+     Cout()<< "In DocumentChnage\n" ;
+}
+
+
 VARIANT Ole::StartApp(const Upp::WString appName){
 	CLSID clsApp;
 	VARIANT App = {0}; //Variant who's contain the app, have -1 into App.intVal if something went wrong
@@ -131,14 +213,16 @@ VARIANT Ole::StartApp(const Upp::WString appName){
       MessageBox(NULL, "CLSIDFromProgID() failed", "Error", 0x10010);
       throw OleException(13,"CLSIDFromProgID() => App Named " + appName.ToString() +" Can't be find",1);
    }
-	
-	if (FAILED(CoCreateInstance(clsApp, NULL, CLSCTX_LOCAL_SERVER, IID_IDispatch, (void **)&App.pdispVal)))
+	if (FAILED(CoCreateInstance(clsApp, NULL, CLSCTX_SERVER,  IID_IUnknown, (void FAR* FAR*)&punk)))
 	{
 		MessageBox(NULL, "this App's not registered properly", "Error", 0x10010);
 		throw OleException(14,"CoCreateInstance() => this App's ("+ appName.ToString()  +")not registered properly",1);
 	}
+	punk->QueryInterface(IID_IDispatch, (void **)&App.pdispVal);
+	InitSinkCommunication(appName);
 	return App;
 }
+
 
 VARIANT Ole::AllocateString(Upp::String myStr){
 	VARIANT buffer = {0};

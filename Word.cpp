@@ -2,11 +2,16 @@
 #include <ole2.h>
 
 WordApp::WordApp(){
+	EventListener = new Upp::Thread;
 	this->isStarted=false;
 	CoInitialize(NULL);
 }
 
 WordApp::~WordApp(){
+	pConnPoint->Unadvise( sink->m_dwEventCookie );
+	
+	delete EventListener;
+	delete sink;
 	CoUninitialize();
 }
 
@@ -36,9 +41,21 @@ bool WordApp::Quit() //Close current Word Application
 	return false;
 }
 
+bool WordApp::FindOrStart(){
+	if(!this->isStarted){
+		this->AppObj = this->FindApp(WS_WordApp);
+		if( this->AppObj.intVal != -1){
+			this->isStarted=true;
+			return true;
+		}
+	}
+	return false;	
+}
+
 int WordApp::Count()
 {
 	return docs.GetCount();
+	
 }
 
 WordDocument WordApp::AddDocument()

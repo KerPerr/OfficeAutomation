@@ -31,7 +31,7 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 	private: 
 		bool ExcelIsStarted; //Bool to know if we started Excel
 		Upp::Vector<ExcelWorkbook> workbooks; //Vector of every workbook
-	
+		Upp::Thread myThread;
  	public:
 		ExcelApp(); //Initialise COM
 		~ExcelApp(); //Unitialise COM
