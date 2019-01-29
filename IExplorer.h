@@ -10,20 +10,32 @@ class IExplorer;
 
 class IExplorer : public Ole {
 private:
-	IWebBrowser2* ptrWebBrowser;
-	IHTMLDocument3 *htmlDocPtr;
-	IDispatch* ptrDispatch;
-	bool isStarted; //Bool to know if we started InternetExplorer
-public:
-	Upp::String GetCookie();
-	void Navigate(Upp::WString url);
+	IWebBrowser2* browser;
+	IHTMLDocument2 *html;
+	bool isStarted;
+	
+	void UpdateHTMLDocPtr();
 	void WaitUntilNotBusy();
 	void WaitUntilReady();
-	bool Stop();
-	bool SetVisible(bool isVisible);
-	bool SetSilent(bool isVisible);
+public:
 	bool Start();
+	bool Stop();
 	bool Quit();
+	
+	bool SetVisible(bool set);
+	bool SetSilent(bool set);
+	bool SetToolBar(bool set);
+	bool SetStatusBar(bool set);
+	bool SetAddressBar(bool set);
+	bool SetMenuBar(bool set);
+
+	bool Navigate(Upp::WString url);
+	
+	Upp::String FindClass();
+	Upp::String FindTitle();
+	Upp::String GetURL();
+	Upp::String GetCookie();
+	
 	typedef IExplorer CLASSNAME;
 	IExplorer();
 	~IExplorer();
