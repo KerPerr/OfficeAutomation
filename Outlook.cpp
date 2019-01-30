@@ -15,6 +15,7 @@ OutlookApp::OutlookApp(){ //Initialise COM
 }
 
 OutlookApp::~OutlookApp(){ //Unitialise COM
+//	~Ole();
 	CoUninitialize();
 }
 

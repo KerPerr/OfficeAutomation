@@ -31,16 +31,15 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 	private: 
 		bool ExcelIsStarted; //Bool to know if we started Excel
 		Upp::Vector<ExcelWorkbook> workbooks; //Vector of every workbook
-		Upp::Thread myThread;
  	public:
 		ExcelApp(); //Initialise COM
 		~ExcelApp(); //Unitialise COM
 		
-		bool Start(); //Start new Excel Application
-		bool FindOrStart(); //Find running Excel or Start new One
+		bool Start(bool startEventListener = false); //Start new Excel Application
+		bool FindOrStart(bool startEventListener = false); //Find running Excel or Start new One
 		bool Quit(); //Close current Excel Application
 		
-		bool FindApplication(); //Find First current Excel Application openned
+		bool FindApplication(bool startEventListener = false); //Find First current Excel Application openned
 		bool SetVisible(bool set); //Set or not the application visible 
 		
 		ExcelWorkbook Workbooks(int index); //Allow to retrieve workbook by is index 

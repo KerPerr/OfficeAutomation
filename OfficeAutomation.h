@@ -5,6 +5,7 @@
 #include <windows.h> 
 #include <exception>
 #include <ocidl.h>
+static const GUID IID_IApplicationEvents2 =  {0x000209FE,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
 /* 
 Project created 01/18/2019 
 By Clément Hamon And Pierre Castrec
@@ -18,12 +19,98 @@ License : https://www.ultimatepp.org/app$ide$About$en-us.html
 Thanks to UPP team
 */
 
-static const GUID IID_IApplicationEvents2 =  {0x000209FE,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
+class COfficeEventHandler;
 class Ole;
 class OleException;
 struct IApplicationEvents2;
-class COfficeEventHandler;
 
+class Ole {
+	private: 
+		virtual HRESULT AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp);//Allow code execution on whatever object 
+		
+	public:
+		typedef Ole CLASSNAME;
+		~Ole();
+		
+		bool EventListened = false;
+		Upp::Thread* eventListener;
+
+		VARIANT AppObj;
+		
+		const Upp::WString WS_ExcelApp = L"Excel.Application"; //MS Excel
+		const Upp::WString WS_WordApp = L"Word.Application"; //MS Word
+		const Upp::WString WS_OutlookApp = L"Outlook.Application"; //MS Outlook
+		const Upp::WString WS_PowerPointApp = L"PowerPoint.Application"; //MS PowerPoint
+		const Upp::WString WS_InternetExplorerApp = L"InternetExplorer.Application"; //MS IE
+		const Upp::WString WS_ProdApp = L"InternetExplorer.Application"; // this one is to use in my context, you'r supposed to never use it :p
+		
+		const Upp::WString WS_CLSID_WordApp = L"{000209FE-0000-0000-C000-000000000046}"; //Clsid of Word
+		const Upp::WString WS_CLSID_ExcelApp = L"{00024500-0000-0000-C000-000000000046}"; //Clsid of Excel
+		
+		virtual VARIANT StartApp(const Upp::WString appName,bool startEventListener = false); 
+		virtual VARIANT FindApp(const Upp::WString appName,bool startEventListener = false,bool isFindOnly = false);
+		virtual void InitSinkCommunication(const Upp::WString appName);
+		
+		virtual Upp::String BSTRtoString (BSTR bstr); //Converting VARIANT.BSTR to Upp::String
+		virtual void IndToStr(int row,int col,char* strResult);//translating row and column number into the string name of the cell.
+		virtual int ColStrToInt(Upp::String target); //Return int represent col. The arg is a range (Example : "AB15")
+		virtual int ExtractRow(Upp::String target); //Return int represent row. The arg is a range (Example : "AB15")
+	
+		virtual VARIANT AllocateString(Upp::String arg); //Easy way to allocate some data into variant to use it as arg
+		virtual VARIANT AllocateString(Upp::WString arg);//Easy way to allocate some data into variant to use it as arg
+		virtual VARIANT AllocateInt(int arg);//Easy way to allocate some data into variant to use it as arg
+		
+		const Upp::WString CLSIDbyName(const Upp::WString appName); //Get App name and return CLsid name is he can
+		/****************************************************************************/
+		// This section allow Free hand execution of code on every object
+		// It mean you must know how VARIANT work to retrieve information you want
+		/****************************************************************************/
+		virtual VARIANT GetAttribute(Upp::WString attributeName); //Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName);//Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(IDispatch* pdisp, Upp::WString attributeName);//Allow to retrieve attribute Value By DISPATCHER
+		
+		virtual VARIANT GetAttribute(Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
+		virtual VARIANT GetAttribute(IDispatch* pdisp, Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By DISPATCHER
+		
+		virtual bool SetAttribute(Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
+		virtual bool SetAttribute(Upp::WString attributeName, int value);//Allow to set attribute Value
+		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
+		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, int value);//Allow to set attribute Value
+		virtual bool SetAttribute(IDispatch* pdisp,Upp::WString attributeName, int value);//Allow to set attribute Value
+		virtual bool SetAttribute(IDispatch* pdisp,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
+		
+		virtual VARIANT ExecuteMethode(Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
+		virtual VARIANT ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
+		virtual VARIANT ExecuteMethode(IDispatch* pdisp,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
+};
+
+class OleException : public std::exception { //classe to managed every OLE exception
+	private:
+	    int m_numero;               //Id of Error
+	    Upp::String m_phrase;       //Error summaries
+	    int m_niveau;               //level of Error  0=> Invoque problem; 1 => Exception from OLE ; 2 => Exception from VARIANT Wrapper
+	    char* myChar=NULL;
+
+	public:
+	    OleException(int numero=0, Upp::String phrase="", int niveau=0){
+	        m_numero = numero;
+	        m_phrase = phrase;
+	        m_niveau = niveau;
+	       	myChar =  new char[m_phrase.GetCount()+1];
+	        strcpy(myChar,this->m_phrase.ToStd().c_str());
+	    }
+	    
+	    virtual const char* what() const throw() {
+	       	return  (const char *)  myChar;
+	    }
+	    int getNiveau() const throw(){
+	    	return m_niveau;
+	    }
+		virtual ~OleException(){
+			delete [] myChar;
+		}
+};
 
 struct IApplicationEvents2 : public IDispatch // Pretty much copied from typelib
 {
@@ -151,103 +238,6 @@ class COfficeEventHandler : public IApplicationEvents2
 	void Quit();
 	void DocumentChange();
 };
-
-class Ole {
-	private: 
-		virtual HRESULT AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp);//Allow code execution on whatever object 
-		
-	public:
-		Upp::Thread* EventListener;
-		COfficeEventHandler* sink = new COfficeEventHandler;
-		IUnknown* iu;
-		IConnectionPoint* pConnPoint;
-		IConnectionPointContainer* pConnPntCont;
-		IUnknown* punk; //Basic pointer to object
-		VARIANT AppObj;
-		
-		const Upp::WString WS_ExcelApp = L"Excel.Application"; //MS Excel
-		const Upp::WString WS_WordApp = L"Word.Application"; //MS Word
-		const Upp::WString WS_OutlookApp = L"Outlook.Application"; //MS Outlook
-		const Upp::WString WS_PowerPointApp = L"PowerPoint.Application"; //MS PowerPoint
-		const Upp::WString WS_InternetExplorerApp = L"InternetExplorer.Application"; //MS IE
-		const Upp::WString WS_ProdApp = L"InternetExplorer.Application"; // this one is to use in my context, you'r supposed to never use it :p
-		
-		const Upp::WString WS_CLSID_WordApp = L"{000209FE-0000-0000-C000-000000000046}";
-		const Upp::WString WS_CLSID_ExcelApp = L"{00024500-0000-0000-C000-000000000046}";
-		
-		
-		virtual VARIANT StartApp(const Upp::WString appName); 
-		virtual VARIANT FindApp(const Upp::WString appName);
-		virtual void InitSinkCommunication(const Upp::WString appName);
-		
-		virtual Upp::String BSTRtoString (BSTR bstr); //Converting VARIANT.BSTR to Upp::String
-		virtual void IndToStr(int row,int col,char* strResult);//translating row and column number into the string name of the cell.
-		virtual int ColStrToInt(Upp::String target);
-		virtual int ExtractRow(Upp::String target);
-	
-		virtual VARIANT AllocateString(Upp::String arg); //Easy way to allocate some data into variant to use it as arg
-		virtual VARIANT AllocateString(Upp::WString arg);//Easy way to allocate some data into variant to use it as arg
-		virtual VARIANT AllocateInt(int arg);//Easy way to allocate some data into variant to use it as arg
-		
-		const Upp::WString CLSIDbyName(const Upp::WString appName);
-		/*******************************************************************/
-		// This section allow Free hand execution of code on every object
-		// It mean you must know how VARIANT work to retrieve information you want
-		/*******************************************************************/
-		virtual VARIANT GetAttribute(Upp::WString attributeName); //Allow to retrieve attribute Value By VARIANT
-		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName);//Allow to retrieve attribute Value By VARIANT
-		virtual VARIANT GetAttribute(IDispatch* pdisp, Upp::WString attributeName);//Allow to retrieve attribute Value By DISPATCHER
-		
-		virtual VARIANT GetAttribute(Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
-		virtual VARIANT GetAttribute(VARIANT variant,Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By VARIANT
-		virtual VARIANT GetAttribute(IDispatch* pdisp, Upp::WString attributeName,int cArgs...);//Allow to retrieve attribute Value By DISPATCHER
-		
-		virtual bool SetAttribute(Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
-		virtual bool SetAttribute(Upp::WString attributeName, int value);//Allow to set attribute Value
-		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
-		virtual bool SetAttribute(VARIANT variant,Upp::WString attributeName, int value);//Allow to set attribute Value
-		virtual bool SetAttribute(IDispatch* pdisp,Upp::WString attributeName, int value);//Allow to set attribute Value
-		virtual bool SetAttribute(IDispatch* pdisp,Upp::WString attributeName, Upp::String value);//Allow to set attribute Value
-		
-		virtual VARIANT ExecuteMethode(Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
-		virtual VARIANT ExecuteMethode(VARIANT variant,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
-		virtual VARIANT ExecuteMethode(IDispatch* pdisp,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
-		
-		virtual void DumpVariant();
-		virtual void DumpVariant(VARIANT variant);
-};
-
-class OleException : public std::exception { //classe to managed every OLE exception
-	private:
-	    int m_numero;               //Id of Error
-	    Upp::String m_phrase;       //Error summaries
-	    int m_niveau;               //level of Error  0=> Invoque problem; 1 => Exception from OLE ; 2 => Exception from VARIANT Wrapper
-	    char* myChar=NULL;
-
-	public:
-	    OleException(int numero=0, Upp::String phrase="", int niveau=0){
-	        m_numero = numero;
-	        m_phrase = phrase;
-	        m_niveau = niveau;
-	       	myChar =  new char[m_phrase.GetCount()+1];
-	        strcpy(myChar,this->m_phrase.ToStd().c_str());
-	    }
-	    
-	    virtual const char* what() const throw() {
-	       	return  (const char *)  myChar;
-	    }
-	    int getNiveau() const throw(){
-	    	return m_niveau;
-	    }
-		virtual ~OleException(){
-			delete [] myChar;
-		}
-};
-
-
-
-
-
 
 #include "Excel.h"
 #include "Word.h"

@@ -117,39 +117,41 @@ void Ole::IndToStr(int row,int col,char* strResult) {
 		sprintf(strResult,"%c%d\0",'A'+(col-1)%26,row);
     }
 }
-
-
 void Ole::InitSinkCommunication(const Upp::WString appName){
-IID id;  
-CLSID clsid;  
-HRESULT hr;
-hr = punk->QueryInterface(IID_IConnectionPointContainer, (void FAR* FAR*)&this->pConnPntCont); 
-hr = IIDFromString(CLSIDbyName(appName),&id);
-hr = pConnPntCont->FindConnectionPoint( id, &pConnPoint );
-hr = sink->QueryInterface( IID_IUnknown, (void FAR* FAR*)&iu);
-hr = pConnPoint->Advise( iu, &sink->m_dwEventCookie );
+		EventListened = true;
+		eventListener = new Upp::Thread;
 
-EventListener->Run([=]{
-  	MSG   msg;
-    BOOL  bRet;
-    while( (bRet = GetMessage( &msg, NULL, 0, 0 )) != 0 )
-    { 
-        if (bRet == -1)
-        {
-            // handle the error and possibly exit
-        }
-        else
-        {
-            TranslateMessage(&msg); 
-            DispatchMessage(&msg); 
-        }
-        Cout() << msg.message <<"\n";
-        if( msg.message == WM_QUERYENDSESSION || msg.message == WM_QUIT || msg.message == WM_DESTROY )
-        {
-            break;
-        }
-    }
-});
+ 
+		
+		eventListener->Run([this,appName](){
+			CoInitialize(NULL);
+			IID id;  
+			HRESULT hr;
+		    COfficeEventHandler sink;
+			IUnknown* iu;
+			IConnectionPoint* pConnPoint;
+			IConnectionPointContainer* pConnPntCont;
+			
+			CLSID clsApp;  
+			CLSIDFromProgID(appName, &clsApp);
+			
+			IUnknown* punk;
+			GetActiveObject( clsApp, NULL, &punk );
+
+			hr = punk->QueryInterface(IID_IConnectionPointContainer, (void FAR* FAR*)&pConnPntCont); 
+			hr = IIDFromString( (wchar_t *)~this->CLSIDbyName(appName) ,&id); //CLSIDbyName(appName)
+			hr = pConnPntCont->FindConnectionPoint( id, &pConnPoint );
+			hr = sink.QueryInterface( IID_IUnknown, (void FAR* FAR*)&iu);
+			pConnPoint->Advise( iu, &sink.m_dwEventCookie );
+			MSG msg;
+			BOOL  bRet;
+			while( !Thread::IsShutdownThreads() ){
+	 			GetMessage( &msg, NULL, 0, 0 );
+	 			DispatchMessage(&msg);
+			}	
+			pConnPoint->Unadvise( sink.m_dwEventCookie );
+			CoUninitialize();
+		});
 }
 
 const Upp::WString Ole::CLSIDbyName(const Upp::WString appName) {
@@ -160,29 +162,44 @@ const Upp::WString Ole::CLSIDbyName(const Upp::WString appName) {
 	return WS_CLSID_ExcelApp;
 }
 
-VARIANT Ole::FindApp(const Upp::WString appName){
+VARIANT Ole::FindApp(const Upp::WString appName,bool startEventListener ,bool isFindOnly){
 	CLSID clsApp;
 	VARIANT App = {0};
-	
+	IUnknown* punk;
 	HRESULT hr = CLSIDFromProgID(appName, &clsApp); 
 	if(!FAILED(hr)){
 		HRESULT hr2 =GetActiveObject( clsApp, NULL, &punk );
 		if (!FAILED(hr2)) {
 			hr2=punk->QueryInterface(IID_IDispatch, (void **)&App.pdispVal);
 			if (!App.ppdispVal) {
-				return this->StartApp(appName);
+				if(isFindOnly)
+					App.intVal = -1;
+				else 
+					return this->StartApp(appName,startEventListener);	
 			}
 		}else
 		{
-			return this->StartApp(appName);
+			if(isFindOnly)
+				App.intVal = -1;
+			else 
+				return this->StartApp(appName,startEventListener);	
 		}
 	}
 	else{
-		return this->StartApp(appName);	
+		if(isFindOnly)
+			App.intVal = -1;
+		else 
+			return this->StartApp(appName,startEventListener);	
 	}
-	InitSinkCommunication(appName);
+	if(startEventListener && App.intVal != -1) {
+		InitSinkCommunication(appName);
+		this->EventListened = true;
+	}
+		
 	return App;	
 }
+
+
 
 void COfficeEventHandler::Startup()
 {
@@ -200,10 +217,10 @@ void COfficeEventHandler::DocumentChange()
 }
 
 
-VARIANT Ole::StartApp(const Upp::WString appName){
+VARIANT Ole::StartApp(const Upp::WString appName,bool startEventListener ){
 	CLSID clsApp;
 	VARIANT App = {0}; //Variant who's contain the app, have -1 into App.intVal if something went wrong
-	
+	IUnknown* punk;
    /* Obtain the CLSID that identifies the app
    * This value is universally unique to Excel versions 5 and up, and
    * is used by OLE to identify which server to start.  We are obtaining
@@ -218,11 +235,19 @@ VARIANT Ole::StartApp(const Upp::WString appName){
 		MessageBox(NULL, "this App's not registered properly", "Error", 0x10010);
 		throw OleException(14,"CoCreateInstance() => this App's ("+ appName.ToString()  +")not registered properly",1);
 	}
+	
 	punk->QueryInterface(IID_IDispatch, (void **)&App.pdispVal);
-	InitSinkCommunication(appName);
+	if(startEventListener) {
+		InitSinkCommunication(appName);
+		this->EventListened = true;
+	}
 	return App;
 }
 
+Ole::~Ole(){
+//	EventListener->Detach();
+
+}
 
 VARIANT Ole::AllocateString(Upp::String myStr){
 	VARIANT buffer = {0};
@@ -674,101 +699,4 @@ int Ole::ExtractRow(Upp::String target)
 		}
 	}
 	return atoi(myRow);
-}
-
-void Ole::DumpVariant(){
-	
-	VARIANT variant = this->AppObj;
-//	Cout()<<(long) variant.lVal<<"\n";
-//	Cout()<<(byte) variant.bVal<<"\n";
-//	Cout()<< (short)variant.iVal<<"\n";
-//	Cout()<< (float)variant.fltVal<<"\n";
-//	Cout()<< (double)variant.dblVal<<"\n";
-//	Cout()<< variant.boolVal<<"\n";
-//	Cout()<< variant.scode<<"\n";
-//	Cout()<< variant.cyVal<<"\n";
-//	Cout()<< variant.date<<"\n";
-//	Cout()<< BSTRtoString(variant.bstrVal ) <<"\n";
-/*	Cout()<< *variant.punkVal<<"\n";
-	Cout()<< *variant.pdispVal<<"\n";
-	Cout()<< *variant.parray<<"\n";
-	Cout()<< *variant.pbVal<<"\n";
-	Cout()<< *variant.piVal<<"\n";
-	Cout()<< *variant.plVal<<"\n";
-	Cout()<< *variant.pllVal<<"\n";
-	Cout()<< *variant.pfltVal<<"\n";
-	Cout()<< *variant.pdblVal<<"\n";
-	Cout()<< *variant.pboolVal<<"\n";
-	Cout()<< *variant.pscode<<"\n";
-	Cout()<< *variant.pcyVal<<"\n";
-	Cout()<< *variant.pdate<<"\n"; 
-	Cout()<< *variantj.pbstrVal<<"\n";
-	Cout()<< **variant.ppunkVal<<"\n";
-	Cout()<< **variantj.ppdispVal<<"\n";
-	Cout()<< **variant.pparray<<"\n";
-	Cout()<< *variant.pvarVal<<"\n";*/
-//	Cout()<< variant.byref<<"\n";
-//	Cout()<< (char)variant.cVal<<"\n";
-//	Cout()<< (unsigned short)variant.uiVal<<"\n";
-//	Cout()<< (unsigned long) variant.ulVal<<"\n";
-//	Cout()<< variant.ullVal<<"\n";
-//	Cout()<< (int)variant.intVal<<"\n";
-//	Cout()<< (unsigned int)variant.uintVal<<"\n";
-//	Cout()<< *variant.pdecVal<<"\n";
-/*	while(variant.pcVal++){
-	Cout()<<"| "  <<*variant.pcVal<<"\n";	
-	}
-	*/
-/*	Cout()<< *variant.puiVal<<"\n";
-	Cout()<< *variant.pulVal<<"\n";
-	Cout()<< *variant.pullVal<<"\n";
-	Cout()<< *variant.pintVal<<"\n";
-	Cout()<< *variant.puintVal<<"\n";*/
-}
-
-void Ole::DumpVariant(VARIANT variant){
-	/*
-	Cout()<< variant.llVal <<"\n";
-	Cout()<< tvariant.lVal<<"\n";
-	Cout()<< variant.bVal<<"\n";
-	Cout()<< variant.iVal<<"\n";
-	Cout()<< variant.fltVal<<"\n";
-	Cout()<< variant.dblVal<<"\n";
-	Cout()<< variant.boolVal<<"\n";
-	Cout()<< variant.scode<<"\n";
-	Cout()<< variant.cyVal<<"\n";
-	Cout()<< variant.date<<"\n";
-	Cout()<< variant.bstrVal<<"\n";
-	Cout()<< *variant.punkVal<<"\n";
-	Cout()<< *variant.pdispVal<<"\n";
-	Cout()<< *variant.parray<<"\n";
-	Cout()<< *variant.pbVal<<"\n";
-	Cout()<< *variant.piVal<<"\n";
-	Cout()<< *variant.plVal<<"\n";
-	Cout()<< *variant.pllVal<<"\n";
-	Cout()<< *variant.pfltVal<<"\n";
-	Cout()<< *variant.pdblVal<<"\n";
-	Cout()<< *variant.pboolVal<<"\n";
-	Cout()<< *variant.pscode<<"\n";
-	Cout()<< *variant.pcyVal<<"\n";
-	Cout()<< *variant.pdate<<"\n"; 
-	Cout()<< *variantj.pbstrVal<<"\n";
-	Cout()<< **variant.ppunkVal<<"\n";
-	Cout()<< **variantj.ppdispVal<<"\n";
-	Cout()<< **variant.pparray<<"\n";
-	Cout()<< *variant.pvarVal<<"\n";
-	Cout()<< variant.byref<<"\n";
-	Cout()<< variantj.cVal<<"\n";
-	Cout()<< variant.uiVal<<"\n";
-	Cout()<< variant.ulVal<<"\n";
-	Cout()<< variant.ullVal<<"\n";
-	Cout()<< variant.intVal<<"\n";
-	Cout()<< variant.uintVal<<"\n";
-	Cout()<< *variant.pdecVal<<"\n";
-	Cout()<< *variant.pcVal<<"\n";
-	Cout()<< *variant.puiVal<<"\n";
-	Cout()<< *variant.pulVal<<"\n";
-	Cout()<< *variant.pullVal<<"\n";
-	Cout()<< *variant.pintVal<<"\n";
-	Cout()<< *variant.puintVal<<"\n";*/
 }

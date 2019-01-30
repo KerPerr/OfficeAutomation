@@ -2,23 +2,20 @@
 #include <ole2.h>
 
 WordApp::WordApp(){
-	EventListener = new Upp::Thread;
 	this->isStarted=false;
 	CoInitialize(NULL);
 }
 
 WordApp::~WordApp(){
-	pConnPoint->Unadvise( sink->m_dwEventCookie );
-	
-	delete EventListener;
-	delete sink;
+//	~Ole();
+
 	CoUninitialize();
 }
 
-bool WordApp::Start() //Start new Word Application
+bool WordApp::Start(bool startEventListener ) //Start new Word Application
 {
 	if(!this->isStarted){
-		this->AppObj = this->StartApp(WS_WordApp);
+		this->AppObj = this->StartApp(WS_WordApp,startEventListener);
 		if( this->AppObj.intVal != -1){
 			this->isStarted=true;
 			return true;
@@ -32,6 +29,12 @@ bool WordApp::Quit() //Close current Word Application
 {
 	if(this->isStarted){
 		try{
+			if(EventListened){
+				eventListener->ShutdownThreads();
+				delete eventListener;
+				EventListened = false;
+			}
+			this->isStarted = false;
 			this->ExecuteMethode("Quit",0);
 			return true;
 		}catch(...){
@@ -41,9 +44,9 @@ bool WordApp::Quit() //Close current Word Application
 	return false;
 }
 
-bool WordApp::FindOrStart(){
+bool WordApp::FindOrStart(bool startEventListener){
 	if(!this->isStarted){
-		this->AppObj = this->FindApp(WS_WordApp);
+		this->AppObj = this->FindApp(WS_WordApp,startEventListener);
 		if( this->AppObj.intVal != -1){
 			this->isStarted=true;
 			return true;

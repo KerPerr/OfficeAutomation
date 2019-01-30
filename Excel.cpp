@@ -25,23 +25,19 @@ Thanks to UPP team
 /************************************************************************************************************************/
 
 ExcelApp::ExcelApp(){//Initialise COM
-	EventListener = new Thread;
 	this->ExcelIsStarted=false;
 	CoInitialize(NULL);
 }
 
 ExcelApp::~ExcelApp(){//Unitialise COM
-
- 	pConnPoint->Unadvise( sink->m_dwEventCookie );
-	delete EventListener;
-	delete sink;
+//	~Ole();
 	CoUninitialize();
 }
 
-bool ExcelApp::Start() //Start new Excel Application
+bool ExcelApp::Start(bool startEventListener ) //Start new Excel Application
 {
 	if(!this->ExcelIsStarted){
-		this->AppObj = this->StartApp(WS_ExcelApp);
+		this->AppObj = this->StartApp(WS_ExcelApp, startEventListener);
 		if( this->AppObj.intVal != -1){
 			this->ExcelIsStarted=true;
 			return true;
@@ -51,9 +47,9 @@ bool ExcelApp::Start() //Start new Excel Application
 	return false;
 }
 
-bool ExcelApp::FindOrStart(){//Find running Excel or Start new One
+bool ExcelApp::FindOrStart(bool startEventListener ){//Find running Excel or Start new One
 	if(!this->ExcelIsStarted){
-		this->AppObj = this->FindApp(WS_ExcelApp);
+		this->AppObj = this->FindApp(WS_ExcelApp,startEventListener);
 		if( this->AppObj.intVal != -1){
 			this->ExcelIsStarted=true;
 			return true;
@@ -66,6 +62,12 @@ bool ExcelApp::Quit() //Close current Excel Application
 {
 	if(this->ExcelIsStarted){
 		try{
+			if(EventListened){
+				Upp::Thread::ShutdownThreads();
+				delete eventListener;
+				EventListened = false;
+			}
+			this->ExcelIsStarted = false;
 			this->ExecuteMethode("Quit",0);	
 			return true;
 		}catch(OleException const& exception){
@@ -75,40 +77,13 @@ bool ExcelApp::Quit() //Close current Excel Application
 	return false;
 }
 	
-bool ExcelApp::FindApplication(){ //Find First current Excel Application still openned
+bool ExcelApp::FindApplication(bool startEventListener){ //Find First current Excel Application still openned
 	if(!this->ExcelIsStarted){
-		CLSID clsExcelApp;
-		VARIANT xlApp = {0};
-
-	   if(FAILED(CLSIDFromProgID(WS_ExcelApp, &clsExcelApp))) {
-	      this->ExcelIsStarted=false;
-	      return false;
-	   }
-	   IUnknown *pUnk;
-	   HWND hExcelMainWnd = 0;
-	   hExcelMainWnd = FindWindow("XLMAIN",NULL);
-	   if(hExcelMainWnd) {
-		   SendMessage(hExcelMainWnd,WM_USER + 18, 0, 0);
-			HRESULT hr2 = GetActiveObject(clsExcelApp,NULL,(IUnknown**)&pUnk);
-			if (!FAILED(hr2)) {
-				this->punk = pUnk;		
-				hr2=pUnk->QueryInterface(IID_IDispatch, (void **)&xlApp.pdispVal);
-				if (!xlApp.ppdispVal) {
-					this->ExcelIsStarted=false;
-					return false;
-				}
-				
-			}
-			if (pUnk) pUnk->Release();
+		this->AppObj = this->FindApp(WS_ExcelApp,startEventListener,true);
+		if( this->AppObj.intVal != -1){
+			this->ExcelIsStarted=true;
+			return true;
 		}
-		else {
-			this->ExcelIsStarted=false;
-			return false;
-		}
-		this->AppObj = xlApp;
-		//InitSinkCommunication();
-		this->ExcelIsStarted=true;
-		return true;	
 	}
 	return false;
 }
