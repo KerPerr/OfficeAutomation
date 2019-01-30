@@ -17,12 +17,47 @@ IExplorer::~IExplorer() { CoUninitialize(); }
 bool IExplorer::Start() //Start new InternetExplorer Application
 {
 	long handle;
-	if(!this->isStarted && SUCCEEDED(CoCreateInstance(CLSID_InternetExplorer, NULL, CLSCTX_PS_DLL, IID_IWebBrowser2, (void**)&browser))) {
+	if(!this->isStarted && SUCCEEDED(CoCreateInstance(CLSID_InternetExplorer, NULL, CLSCTX_LOCAL_SERVER, IID_IWebBrowser2, (void**)&browser))) {
 		this->isStarted = true;
 		browser->get_HWND(&handle);
 		WaitUntilNotBusy();
 		return this->isStarted;
 	} return false;
+}
+
+bool IExplorer::Search(Upp::WString url)
+{
+	IShellWindows *psw;
+	HRESULT hr = CoCreateInstance(CLSID_ShellWindows,NULL,CLSCTX_ALL,IID_IShellWindows,(void**)&psw);
+	if (FAILED(hr)) return false;
+	IWebBrowser2* pBrowser2 = 0;
+	bool found = false;
+	long nCount = 0;
+	hr = psw->get_Count(&nCount);
+	if (SUCCEEDED(hr)) {
+		for (long i = nCount - 1; (i >= 0) && (!found); i--) {
+			// get interface to item no i
+			_variant_t va(i, VT_I4);
+			IDispatch * spDisp;
+			hr = psw->Item(va,&spDisp);
+			hr = spDisp->QueryInterface(IID_IWebBrowserApp,(void **)&pBrowser2);
+			if (SUCCEEDED(hr)) {
+				BSTR name;
+				pBrowser2->get_LocationURL(&name);
+				Upp::WString n(name);
+				if (n.Find(url) == -1) {
+					pBrowser2->Release();
+					return false;
+				} else {
+					this->isStarted = true;
+					this->browser = pBrowser2;
+					return true;
+				}
+			}
+		}
+		psw->Release();
+	}
+	return false;
 }
 
 bool IExplorer::Stop()
@@ -43,6 +78,13 @@ bool IExplorer::Quit()
 bool IExplorer::SetVisible(bool set)
 {
 	if(this->isStarted && SUCCEEDED(browser->put_Visible(set))) {
+		return true;
+	} return false;
+}
+
+bool IExplorer::SetFullScreen(bool set)
+{
+	if(this->isStarted && SUCCEEDED(browser->put_TheaterMode(set))) {
 		return true;
 	} return false;
 }
@@ -100,6 +142,19 @@ Upp::String IExplorer::GetURL()
 	}
 }
 
+Upp::String IExplorer::GetType()
+{
+	BSTR tp;
+	this->WaitUntilNotBusy();
+	try {
+		if(this->isStarted && SUCCEEDED(browser->get_Type(&tp))) {
+			return BSTRtoString(tp);
+		} return "Error";
+	} catch (const OleException &e) {
+		throw OleException(31, "get_Type", 1);
+	}
+}
+
 Upp::String IExplorer::GetCookie()
 {
 	BSTR cookie;
@@ -110,7 +165,33 @@ Upp::String IExplorer::GetCookie()
 			return BSTRtoString(cookie);
 		} return "Error";
 	} catch (const OleException &e) {
-		throw OleException(31, "get_Cookie", 1);
+		throw OleException(32, "get_Cookie", 1);
+	}
+}
+
+Upp::String IExplorer::ToString()
+{
+	BSTR str;
+	this->WaitUntilNotBusy();
+	this->UpdateHTMLDocPtr();
+	try {
+		if(this->isStarted && SUCCEEDED(html->toString(&str))) {
+			return BSTRtoString(str);
+		} return "Error";
+	} catch (const OleException &e) {
+		throw OleException(32, "get_Cookie", 1);
+	}
+}
+
+long IExplorer::GetHWND()
+{
+	long lg;
+	try {
+		if(this->isStarted && SUCCEEDED(browser->get_HWND(&lg))) {
+			return lg;
+		} return NULL;
+	} catch (const OleException &e) {
+		throw OleException(31, "get_HWND", 1);
 	}
 }
 

@@ -18,12 +18,14 @@ private:
 	void WaitUntilNotBusy();
 	void WaitUntilReady();
 public:
+	bool Search(Upp::WString url);
 	bool Start();
 	bool Stop();
 	bool Quit();
 	
 	bool SetVisible(bool set);
 	bool SetSilent(bool set);
+	bool SetFullScreen(bool set);
 	bool SetToolBar(bool set);
 	bool SetStatusBar(bool set);
 	bool SetAddressBar(bool set);
@@ -34,7 +36,11 @@ public:
 	Upp::String FindClass();
 	Upp::String FindTitle();
 	Upp::String GetURL();
+	Upp::String GetType();
 	Upp::String GetCookie();
+	Upp::String ToString();
+	
+	long GetHWND();
 	
 	typedef IExplorer CLASSNAME;
 	IExplorer();
