@@ -4,7 +4,7 @@
 #include <Core/Core.h>
 #include <stdio.h>
 #include <windows.h>
-#include "OfficeAutomation.h"
+
 
 class WordApp;
 class WordDocument;

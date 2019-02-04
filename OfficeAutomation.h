@@ -1,11 +1,12 @@
 #ifndef _OfficeAutomation_OfficeAutomation_h_
 #define _OfficeAutomation_OfficeAutomation_h_
-
 #include <Core/Core.h>
 #include <windows.h> 
 #include <exception>
 #include <ocidl.h>
-static const GUID IID_IApplicationEvents2 =  {0x000209FE,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
+#include <typeinfo>
+
+
 /* 
 Project created 01/18/2019 
 By Clément Hamon And Pierre Castrec
@@ -85,6 +86,11 @@ class Ole {
 		virtual VARIANT ExecuteMethode(IDispatch* pdisp,Upp::WString methodName,int cArgs...);//Allow to execute methode attribute retrieve VARIANT
 };
 
+#include "Excel.h"
+#include "Word.h"
+#include "Outlook.h"
+#include "IExplorer.h"
+
 class OleException : public std::exception { //classe to managed every OLE exception
 	private:
 	    int m_numero;               //Id of Error
@@ -112,6 +118,8 @@ class OleException : public std::exception { //classe to managed every OLE excep
 		}
 };
 
+
+
 struct IApplicationEvents2 : public IDispatch // Pretty much copied from typelib
 {
 /*
@@ -130,18 +138,18 @@ STDMETHODIMP Invoke(DISPID dispIdMember, REFIID riid, LCID lcid,
                               VARIANT* pVarResult, EXCEPINFO* pExcepInfo,
                               UINT* puArgErr) = 0;
 
-/*
- * IApplicationEvents2 methods
- */
-STDMETHODIMP Startup();
-STDMETHODIMP Quit();
-STDMETHODIMP DocumentChange();
+
 };
+
+static const GUID IID_IApplicationEvents2Word =  {0x000209FE,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
+static const GUID IID_IApplicationEvents2Excel =  {0x00024500,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
 
 class COfficeEventHandler : public IApplicationEvents2
 {
 	protected:
 	LONG m_cRef;
+	ExcelApp * excelInstance=NULL;
+	WordApp * wordInstance=NULL;
 	
 	public:
 	DWORD m_dwEventCookie;
@@ -150,6 +158,20 @@ class COfficeEventHandler : public IApplicationEvents2
 		m_cRef={1};
 		m_dwEventCookie={0};
 	}
+	
+template<class Type> COfficeEventHandler(Type* instance){
+		m_cRef={1};
+		m_dwEventCookie={0};
+		Upp::Cout() << typeid(instance).name() <<"\n";
+		Upp::Cout() << typeid(WordApp*).name() <<"\n";
+		if(typeid(instance).name()==typeid(ExcelApp*).name()){
+			excelInstance =  dynamic_cast<ExcelApp*>(instance);
+		}
+		else if(typeid(instance).name()==typeid(WordApp*).name()){
+			wordInstance =  dynamic_cast<WordApp*>(instance);
+		}
+	}
+
 
 	STDMETHOD_(ULONG, AddRef)()
 	{
@@ -167,32 +189,24 @@ class COfficeEventHandler : public IApplicationEvents2
 		return m_cRef;
 	}
 	
-	STDMETHOD(QueryInterface)(REFIID riid, void ** ppvObj)
-	{
-	 if (riid == IID_IUnknown){
-	    *ppvObj = static_cast<IApplicationEvents2*>(this);
-	}
-	
-	else if (riid == IID_IApplicationEvents2){
-	    *ppvObj = static_cast<IApplicationEvents2*>(this);
-	}
-	else if (riid == IID_IDispatch){
-	    *ppvObj = static_cast<IApplicationEvents2*>(this);
-	}
-	else
-	{
-	    char clsidStr[256];
-	    WCHAR wClsidStr[256];
-	    char txt[512];
-	    StringFromGUID2(riid, (LPOLESTR)&wClsidStr, 256);
-	    // Convert down to ANSI
-	    WideCharToMultiByte(CP_ACP, 0, wClsidStr, -1, clsidStr, 256, NULL, NULL);
-	    sprintf_s(txt, 512, "riid is : %s: Unsupported Interface", clsidStr);
-	    *ppvObj = NULL;
-	    return E_NOINTERFACE;
-	}
-	
-	static_cast<IUnknown*>(*ppvObj)->AddRef();
+	STDMETHOD(QueryInterface)(REFIID riid , void ** ppvObj){
+		if (riid == IID_IUnknown || riid == IID_IDispatch || riid == IID_IApplicationEvents2Excel || riid == IID_IApplicationEvents2Word){
+		    *ppvObj = static_cast<IApplicationEvents2*>(this);
+		}	
+		else
+		{
+		    char clsidStr[256];
+		    WCHAR wClsidStr[256];
+		    char txt[512];
+		    StringFromGUID2(riid, (LPOLESTR)&wClsidStr, 256);
+		    // Convert down to ANSI
+		    WideCharToMultiByte(CP_ACP, 0, wClsidStr, -1, clsidStr, 256, NULL, NULL);
+		    sprintf_s(txt, 512, "riid is : %s: Unsupported Interface", clsidStr);
+		    Upp::Cout() << clsidStr <<"\n";
+		    *ppvObj = NULL;
+		    return E_NOINTERFACE;
+		}
+		static_cast<IUnknown*>(*ppvObj)->AddRef();
 		return S_OK;
 	}
 	
@@ -220,29 +234,25 @@ class COfficeEventHandler : public IApplicationEvents2
 		Upp::Cout() << dispidMember <<"\n";
 	    switch(dispidMember){
 	    case 0x01:    // Startup
-	        Startup();
+	       Upp::Cout() <<"Word Demarer" <<"\n";
 	    break;
 	    case 0x02:    // Quit
-	        Quit();
+	       Upp::Cout() <<"Document Quit" <<"\n";
+			if(excelInstance) Upp::Cout() <<" Document Excel !" << "\n";
+			if(wordInstance) Upp::Cout() <<" Document Word !" << "\n";
 	    break;
 	    case 0x03:    // DocumentChange
-	        DocumentChange();
+	        Upp::Cout() <<"Document Change" <<"\n";
 	    break;
 	    }
 	
 	    return S_OK;
 	}
 	
-	// IApplicationEvents2 methods
-	void Startup();
-	void Quit();
-	void DocumentChange();
+
 };
 
-#include "Excel.h"
-#include "Word.h"
-#include "Outlook.h"
-#include "IExplorer.h"
+
 
 
 #endif
