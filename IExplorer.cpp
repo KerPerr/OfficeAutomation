@@ -16,7 +16,7 @@ IExplorer::~IExplorer() { CoUninitialize(); }
 
 bool IExplorer::Start() //Start new InternetExplorer Application
 {
-	long handle;
+	SHANDLE_PTR handle;
 	if(!this->isStarted && SUCCEEDED(CoCreateInstance(CLSID_InternetExplorer, NULL, CLSCTX_LOCAL_SERVER, IID_IWebBrowser2, (void**)&browser))) {
 		this->isStarted = true;
 		browser->get_HWND(&handle);
@@ -25,17 +25,50 @@ bool IExplorer::Start() //Start new InternetExplorer Application
 	} return false;
 }
 
+bool IExplorer::Search()
+{
+	IShellWindows *psw;
+	HRESULT hr = CoCreateInstance(CLSID_ShellWindows,NULL,CLSCTX_ALL,IID_IShellWindows,(void**)&psw);
+	if (FAILED(hr)) return false;
+	IWebBrowser2* pBrowser2 = 0;
+	long nCount = 0;
+	hr = psw->get_Count(&nCount);
+	if (SUCCEEDED(hr)) {
+		for (long i = nCount - 1; (i >= 0); i--) {
+			// get interface to item no i
+			_variant_t va(i, VT_I4);
+			IDispatch * spDisp;
+			hr = psw->Item(va,&spDisp);
+			hr = spDisp->QueryInterface(IID_IWebBrowserApp,(void **)&pBrowser2);
+			if (SUCCEEDED(hr)) {
+				BSTR name;
+				pBrowser2->get_FullName(&name);
+				Upp::String n = BSTRtoString(name);
+				if (n.Find("IEXPLORE") == -1) {
+					pBrowser2->Release();
+					return false;
+				} else {
+					this->browser = pBrowser2;
+					this->isStarted = true;
+					return true;
+				}
+			}
+		}
+		psw->Release();
+	}
+	return false;
+}
+
 bool IExplorer::Search(Upp::WString url)
 {
 	IShellWindows *psw;
 	HRESULT hr = CoCreateInstance(CLSID_ShellWindows,NULL,CLSCTX_ALL,IID_IShellWindows,(void**)&psw);
 	if (FAILED(hr)) return false;
 	IWebBrowser2* pBrowser2 = 0;
-	bool found = false;
 	long nCount = 0;
 	hr = psw->get_Count(&nCount);
 	if (SUCCEEDED(hr)) {
-		for (long i = nCount - 1; (i >= 0) && (!found); i--) {
+		for (long i = nCount - 1; i >= 0; i--) {
 			// get interface to item no i
 			_variant_t va(i, VT_I4);
 			IDispatch * spDisp;
@@ -136,80 +169,30 @@ Upp::String IExplorer::GetURL()
 	try {
 		if(this->isStarted && SUCCEEDED(browser->get_LocationURL(&url))) {
 			return BSTRtoString(url);
-		} return "Error";
+		} return "Error : getUrl()";
 	} catch (const OleException &e) {
 		throw OleException(30, "get_LocationURL", 1);
-	}
-}
-
-Upp::String IExplorer::GetType()
-{
-	BSTR tp;
-	this->WaitUntilNotBusy();
-	try {
-		if(this->isStarted && SUCCEEDED(browser->get_Type(&tp))) {
-			return BSTRtoString(tp);
-		} return "Error";
-	} catch (const OleException &e) {
-		throw OleException(31, "get_Type", 1);
 	}
 }
 
 Upp::String IExplorer::GetCookie()
 {
 	BSTR cookie;
-	this->WaitUntilNotBusy();
+	//this->WaitUntilNotBusy();
 	this->UpdateHTMLDocPtr();
 	try {
 		if(this->isStarted && SUCCEEDED(html->get_cookie(&cookie))) {
-			return BSTRtoString(cookie);
-		} return "Error";
+			if(cookie) return BSTRtoString(cookie);
+		} return "Error : getCookie()";
 	} catch (const OleException &e) {
 		throw OleException(32, "get_Cookie", 1);
 	}
-}
-
-Upp::String IExplorer::ToString()
-{
-	BSTR str;
-	this->WaitUntilNotBusy();
-	this->UpdateHTMLDocPtr();
-	try {
-		if(this->isStarted && SUCCEEDED(html->toString(&str))) {
-			return BSTRtoString(str);
-		} return "Error";
-	} catch (const OleException &e) {
-		throw OleException(32, "get_Cookie", 1);
-	}
-}
-
-long IExplorer::GetHWND()
-{
-	long lg;
-	try {
-		if(this->isStarted && SUCCEEDED(browser->get_HWND(&lg))) {
-			return lg;
-		} return NULL;
-	} catch (const OleException &e) {
-		throw OleException(31, "get_HWND", 1);
-	}
-}
-
-Upp::String IExplorer::FindClass()
-{
-	char str[1024];
-	long lg;
-	if(SUCCEEDED(browser->get_HWND(&lg))) {
-		char* className = str;
-		GetClassNameA((HWND)lg, (LPSTR)className, sizeof(str));
-		return className;
-	} return "Error";
 }
 
 Upp::String IExplorer::FindTitle()
 {
 	char str[1024];
-	long lg;
+	SHANDLE_PTR lg;
 	if(SUCCEEDED(browser->get_HWND(&lg))) {
 		char* titleName = str;
 		GetWindowTextA((HWND)lg, (LPSTR)titleName, sizeof(str));

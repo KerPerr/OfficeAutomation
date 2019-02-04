@@ -18,7 +18,9 @@ private:
 	void WaitUntilNotBusy();
 	void WaitUntilReady();
 public:
+	bool Search();
 	bool Search(Upp::WString url);
+	
 	bool Start();
 	bool Stop();
 	bool Quit();
@@ -33,14 +35,9 @@ public:
 
 	bool Navigate(Upp::WString url);
 	
-	Upp::String FindClass();
-	Upp::String FindTitle();
 	Upp::String GetURL();
-	Upp::String GetType();
 	Upp::String GetCookie();
-	Upp::String ToString();
-	
-	long GetHWND();
+	Upp::String FindTitle();
 	
 	typedef IExplorer CLASSNAME;
 	IExplorer();
