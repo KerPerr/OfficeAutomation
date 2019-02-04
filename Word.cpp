@@ -1,5 +1,4 @@
-#include "Word.h"
-#include <ole2.h>
+#include "OfficeAutomation.h"
 
 WordApp::WordApp(){
 	this->isStarted=false;

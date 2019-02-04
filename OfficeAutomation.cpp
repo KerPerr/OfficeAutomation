@@ -4,7 +4,6 @@
 #include <ole2.h>
 #include <stdio.h>
 #include "OfficeAutomation.h"
-
 #define DISP_FREEARGS 0x01
 #define DISP_NOSHOWEXCEPTIONS 0x02
 
@@ -121,25 +120,39 @@ void Ole::InitSinkCommunication(const Upp::WString appName){
 		EventListened = true;
 		eventListener = new Upp::Thread;
 
- 
-		
 		eventListener->Run([this,appName](){
 			CoInitialize(NULL);
 			IID id;  
 			HRESULT hr;
-		    COfficeEventHandler sink;
+		    COfficeEventHandler sink(this);
 			IUnknown* iu;
 			IConnectionPoint* pConnPoint;
 			IConnectionPointContainer* pConnPntCont;
 			
 			CLSID clsApp;  
-			CLSIDFromProgID(appName, &clsApp);
+			hr = CLSIDFromProgID(appName, &clsApp);
 			
 			IUnknown* punk;
-			GetActiveObject( clsApp, NULL, &punk );
+			hr = GetActiveObject( clsApp, NULL, &punk );
 
 			hr = punk->QueryInterface(IID_IConnectionPointContainer, (void FAR* FAR*)&pConnPntCont); 
-			hr = IIDFromString( (wchar_t *)~this->CLSIDbyName(appName) ,&id); //CLSIDbyName(appName)
+			hr = IIDFromString( this->CLSIDbyName(appName) ,&id); //(wchar_t *)~
+		/*
+			IEnumConnectionPoints* myEnum;
+			hr = pConnPntCont->EnumConnectionPoints(&myEnum);
+			
+			ULONG itemRetrieved;
+			LPCONNECTIONPOINT* myConPoint;
+			hr = myEnum->Reset();
+			hr = myEnum->Next((ULONG)2, myConPoint,&itemRetrieved);
+			if(hr == 0){
+				for(int e= 0; e < itemRetrieved;e++){
+					IID theID;  
+				   myConPoint[e]->GetConnectionInterface(&theID);
+				
+				}
+			}*/
+			
 			hr = pConnPntCont->FindConnectionPoint( id, &pConnPoint );
 			hr = sink.QueryInterface( IID_IUnknown, (void FAR* FAR*)&iu);
 			pConnPoint->Advise( iu, &sink.m_dwEventCookie );
@@ -199,22 +212,6 @@ VARIANT Ole::FindApp(const Upp::WString appName,bool startEventListener ,bool is
 	return App;	
 }
 
-
-
-void COfficeEventHandler::Startup()
-{
-    Cout()<< "In Startup\n" ;
-}
-
-void COfficeEventHandler::Quit()
-{
-     Cout()<< "In Quit\n" ;
-}
-
-void COfficeEventHandler::DocumentChange()
-{
-     Cout()<< "In DocumentChnage\n" ;
-}
 
 
 VARIANT Ole::StartApp(const Upp::WString appName,bool startEventListener ){

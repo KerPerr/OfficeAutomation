@@ -189,7 +189,7 @@ long IExplorer::GetHWND()
 	try {
 		if(this->isStarted && SUCCEEDED(browser->get_HWND(&lg))) {
 			return lg;
-		} return NULL;
+		} return 0;
 	} catch (const OleException &e) {
 		throw OleException(31, "get_HWND", 1);
 	}

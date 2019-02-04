@@ -2,7 +2,7 @@
 #include <windows.h>
 #include <ole2.h>
 #include <stdio.h>
-#include "Excel.h"
+
 #include "OfficeAutomation.h"
 
 #define DISP_FREEARGS 0x01

@@ -1,6 +1,6 @@
 #ifndef _OfficeAutomation_Excel_h_
 #define _OfficeAutomation_Excel_h_
-#include "OfficeAutomation.h"
+
 
 /* 
 Project created 01/18/2019 
