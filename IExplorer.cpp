@@ -16,7 +16,7 @@ IExplorer::~IExplorer() { CoUninitialize(); }
 
 bool IExplorer::Start() //Start new InternetExplorer Application
 {
-	long handle;
+	SHANDLE_PTR handle;
 	if(!this->isStarted && SUCCEEDED(CoCreateInstance(CLSID_InternetExplorer, NULL, CLSCTX_LOCAL_SERVER, IID_IWebBrowser2, (void**)&browser))) {
 		this->isStarted = true;
 		browser->get_HWND(&handle);
@@ -185,7 +185,7 @@ Upp::String IExplorer::ToString()
 
 long IExplorer::GetHWND()
 {
-	long lg;
+	SHANDLE_PTR lg;
 	try {
 		if(this->isStarted && SUCCEEDED(browser->get_HWND(&lg))) {
 			return lg;
@@ -198,7 +198,7 @@ long IExplorer::GetHWND()
 Upp::String IExplorer::FindClass()
 {
 	char str[1024];
-	long lg;
+	SHANDLE_PTR lg;
 	if(SUCCEEDED(browser->get_HWND(&lg))) {
 		char* className = str;
 		GetClassNameA((HWND)lg, (LPSTR)className, sizeof(str));
@@ -209,7 +209,7 @@ Upp::String IExplorer::FindClass()
 Upp::String IExplorer::FindTitle()
 {
 	char str[1024];
-	long lg;
+	SHANDLE_PTR lg;
 	if(SUCCEEDED(browser->get_HWND(&lg))) {
 		char* titleName = str;
 		GetWindowTextA((HWND)lg, (LPSTR)titleName, sizeof(str));

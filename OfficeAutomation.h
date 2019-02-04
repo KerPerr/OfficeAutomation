@@ -6,8 +6,7 @@
 #include <ocidl.h>
 #include <typeinfo>
 
-static const GUID IID_IApplicationEvents2Word =  {0x000209FE,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
-static const GUID IID_IApplicationEvents2Excel =  {0x00024500,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
+
 /* 
 Project created 01/18/2019 
 By Clément Hamon And Pierre Castrec
@@ -142,6 +141,8 @@ STDMETHODIMP Invoke(DISPID dispIdMember, REFIID riid, LCID lcid,
 
 };
 
+static const GUID IID_IApplicationEvents2Word =  {0x000209FE,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
+static const GUID IID_IApplicationEvents2Excel =  {0x00024500,0x0000,0x0000, {0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}};
 
 class COfficeEventHandler : public IApplicationEvents2
 {
@@ -171,6 +172,7 @@ template<class Type> COfficeEventHandler(Type* instance){
 		}
 	}
 
+
 	STDMETHOD_(ULONG, AddRef)()
 	{
 		InterlockedIncrement(&m_cRef);
@@ -187,36 +189,24 @@ template<class Type> COfficeEventHandler(Type* instance){
 		return m_cRef;
 	}
 	
-	STDMETHOD(QueryInterface)(REFIID riid, void ** ppvObj)
-	{
-	 if (riid == IID_IUnknown){
-	    *ppvObj = static_cast<IApplicationEvents2*>(this);
-	}
-	
-	else if (riid == IID_IApplicationEvents2Word){
-	    *ppvObj = static_cast<IApplicationEvents2*>(this);
-	}
-	else if (riid == IID_IApplicationEvents2Excel){
-	    *ppvObj = static_cast<IApplicationEvents2*>(this);
-	}
-	else if (riid == IID_IDispatch){
-	    *ppvObj = static_cast<IApplicationEvents2*>(this);
-	}
-	else
-	{
-	    char clsidStr[256];
-	    WCHAR wClsidStr[256];
-	    char txt[512];
-	    StringFromGUID2(riid, (LPOLESTR)&wClsidStr, 256);
-	    // Convert down to ANSI
-	    WideCharToMultiByte(CP_ACP, 0, wClsidStr, -1, clsidStr, 256, NULL, NULL);
-	    sprintf_s(txt, 512, "riid is : %s: Unsupported Interface", clsidStr);
-	    Upp::Cout() << clsidStr <<"\n";
-	    *ppvObj = NULL;
-	    return E_NOINTERFACE;
-	}
-	
-	static_cast<IUnknown*>(*ppvObj)->AddRef();
+	STDMETHOD(QueryInterface)(REFIID riid , void ** ppvObj){
+		if (riid == IID_IUnknown || riid == IID_IDispatch || riid == IID_IApplicationEvents2Excel || riid == IID_IApplicationEvents2Word){
+		    *ppvObj = static_cast<IApplicationEvents2*>(this);
+		}	
+		else
+		{
+		    char clsidStr[256];
+		    WCHAR wClsidStr[256];
+		    char txt[512];
+		    StringFromGUID2(riid, (LPOLESTR)&wClsidStr, 256);
+		    // Convert down to ANSI
+		    WideCharToMultiByte(CP_ACP, 0, wClsidStr, -1, clsidStr, 256, NULL, NULL);
+		    sprintf_s(txt, 512, "riid is : %s: Unsupported Interface", clsidStr);
+		    Upp::Cout() << clsidStr <<"\n";
+		    *ppvObj = NULL;
+		    return E_NOINTERFACE;
+		}
+		static_cast<IUnknown*>(*ppvObj)->AddRef();
 		return S_OK;
 	}
 	
