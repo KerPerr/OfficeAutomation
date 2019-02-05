@@ -189,46 +189,6 @@ Upp::String IExplorer::GetCookie()
 	}
 }
 
-<<<<<<< HEAD
-=======
-Upp::String IExplorer::ToString()
-{
-	BSTR str;
-	this->WaitUntilNotBusy();
-	this->UpdateHTMLDocPtr();
-	try {
-		if(this->isStarted && SUCCEEDED(html->toString(&str))) {
-			return BSTRtoString(str);
-		} return "Error";
-	} catch (const OleException &e) {
-		throw OleException(32, "get_Cookie", 1);
-	}
-}
-
-long IExplorer::GetHWND()
-{
-	SHANDLE_PTR lg;
-	try {
-		if(this->isStarted && SUCCEEDED(browser->get_HWND(&lg))) {
-			return lg;
-		} return 0;
-	} catch (const OleException &e) {
-		throw OleException(31, "get_HWND", 1);
-	}
-}
-
-Upp::String IExplorer::FindClass()
-{
-	char str[1024];
-	SHANDLE_PTR lg;
-	if(SUCCEEDED(browser->get_HWND(&lg))) {
-		char* className = str;
-		GetClassNameA((HWND)lg, (LPSTR)className, sizeof(str));
-		return className;
-	} return "Error";
-}
-
->>>>>>> e6a564776423f58a6b6b347aa7b4579e9186098b
 Upp::String IExplorer::FindTitle()
 {
 	char str[1024];
