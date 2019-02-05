@@ -305,7 +305,7 @@ int ExcelSheet::GetLastRow(Upp::String Colonne){//Retrieve last row of a colonne
 	xlToRight	-4161	To right.
 	xlUp		-4162	Up.
 	*/
-	return this->GetAttribute(this->GetAttribute(this->GetAttribute("Range",1,AllocateString(finalRange)),"End",1,AllocateInt(-4121)),L"Row").intVal;	
+	return this->GetAttribute(this->GetAttribute(this->GetAttribute("Range",1,AllocateString(finalRange)),"End",1,AllocateInt(-4162)),L"Row").intVal;
 }
 
 int  ExcelSheet::GetLastColumn(){// Retrieve the last Column
