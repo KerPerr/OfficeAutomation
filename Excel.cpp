@@ -143,7 +143,7 @@ bool ExcelApp::RemoveAWorkbookFromVector(ExcelWorkbook* wb){// remove workbook f
 	bool trouver = false;
 	int i =0;
 	for(i= 0; i < workbooks.GetCount(); i++){
-		Cout() << wb <<  ":" << &workbooks[i] <<"\n";
+		// Cout() << wb <<  ":" << &workbooks[i] <<"\n";
 		if( wb == &workbooks[i]){
 			trouver = true;
 			break;
@@ -305,7 +305,7 @@ int ExcelSheet::GetLastRow(Upp::String Colonne){//Retrieve last row of a colonne
 	xlToRight	-4161	To right.
 	xlUp		-4162	Up.
 	*/
-	return this->GetAttribute(this->GetAttribute(this->GetAttribute("Range",1,AllocateString(finalRange)),"End",1,AllocateInt(-4162)),L"Row").intVal;
+	return this->GetAttribute(this->GetAttribute(this->GetAttribute("Range",1,AllocateString(finalRange)),"End",1,AllocateInt(-4121)),L"Row").intVal;
 }
 
 int  ExcelSheet::GetLastColumn(){// Retrieve the last Column
