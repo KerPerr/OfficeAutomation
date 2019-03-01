@@ -17,8 +17,8 @@ CONSOLE_APP_MAIN
 	try{
 		myExcel.FindOrStart();
 		myExcel.SetVisible(true);
-		Workbook wb = myExcel.OpenWorkbook("C:\\Users\\HAMONC\\Documents\\RecapOfr envoyer.xlsx");
-		Sheet ws = wb.Sheets("5- OFR - SBT (A CHARGER DANS");
+		Workbook wb = myExcel.OpenWorkbook(" WB PATH ");
+		Sheet ws = wb.Sheets("SHEET NAME ");
 	
 		Range myRange = ws.Range("A1:B5");
 		myRange.Value("CECI EST UN TEST");
