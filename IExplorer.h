@@ -34,6 +34,7 @@ public:
 	bool SetMenuBar(bool set);
 
 	bool Navigate(Upp::WString url);
+	bool Open(Upp::WString url);
 	
 	Upp::String GetURL();
 	Upp::String GetCookie();
