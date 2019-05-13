@@ -82,7 +82,7 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 
 class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 	private:
-		ExcelWorkbook* parent =NULL;//Pointer to excelworkbook
+		ExcelWorkbook* parent =NULL;//Pointer to excelworkbook 
 	public:
 		ExcelWorkbook*const GetParent()const; //Getter on parent pointer
 		
