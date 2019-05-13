@@ -40,7 +40,7 @@ bool OutlookApp::FindOrStart(){ //Find running Outlook or Start new One
 		CLSID clsOutlookApp;
 		VARIANT xlApp = {0};
 
-		if(FAILED(CLSIDFromProgID(WS_ExcelApp, &clsOutlookApp))) {
+		if(FAILED(CLSIDFromProgID(WS_OutlookApp, &clsOutlookApp))) {
 		  this->OutlookIsStarted=false;
 		  return this->Start();
 		}

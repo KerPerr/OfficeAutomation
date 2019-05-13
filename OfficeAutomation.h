@@ -56,7 +56,7 @@ class Ole {
 		virtual void IndToStr(int row,int col,char* strResult);//translating row and column number into the string name of the cell.
 		virtual int ColStrToInt(Upp::String target); //Return int represent col. The arg is a range (Example : "AB15")
 		virtual int ExtractRow(Upp::String target); //Return int represent row. The arg is a range (Example : "AB15")
-		virtual Upp::String StringWOZ(Upp::String str);
+		virtual Upp::String StringWOZ(Upp::String str); //Remove All useless 0 after comma (used to clean a double casted to string)
 	
 		virtual VARIANT AllocateString(Upp::String arg); //Easy way to allocate some data into variant to use it as arg
 		virtual VARIANT AllocateString(Upp::WString arg);//Easy way to allocate some data into variant to use it as arg
