@@ -327,7 +327,7 @@ ExcelRange ExcelSheet::GetCurrentRegion(){//Return ExcelRange that's represente 
 ExcelCell ExcelSheet::Cells(int ligne, int colonne){//Return a Cells
 	char range[50];
 	IndToStr(ligne,colonne,range);
-	return ExcelCell(GetAttribute(GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"Cells",2, AllocateInt(ligne),AllocateInt(colonne)));; 
+	return ExcelCell(GetAttribute(GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"Cells",2, AllocateInt(colonne),AllocateInt(ligne)));; 
 }
 /************************************************************************************************************************/
 ExcelSheet*const ExcelRange::GetParent()const{//Getter on parent pointer
@@ -358,7 +358,7 @@ Upp::String ExcelRange::GetTheRange(){//Return the range used to get the Item, i
 ExcelCell ExcelRange::Cells(int ligne, int colonne){//Return a Cells by is column and row
 	char range[50];
 	IndToStr(ligne,colonne,range);
-	return ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(ligne),AllocateInt(colonne)));; 
+	return ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(colonne),AllocateInt(ligne)));
 }
 
 /*
