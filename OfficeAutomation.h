@@ -103,15 +103,15 @@ class OleException : public std::exception { //classe to managed every OLE excep
 	        m_numero = numero;
 	        m_phrase = phrase;
 	        m_niveau = niveau;
-	       	myChar =  new char[m_phrase.GetCount()+1];
+			myChar =  new char[m_phrase.GetCount()+1];
 	        strcpy(myChar,this->m_phrase.ToStd().c_str());
 	    }
 	    
 	    virtual const char* what() const throw() {
-	       	return  (const char *)  myChar;
+			return  (const char *)  myChar;
 	    }
 	    int getNiveau() const throw(){
-	    	return m_niveau;
+			return m_niveau;
 	    }
 		virtual ~OleException(){
 			delete [] myChar;

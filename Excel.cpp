@@ -418,12 +418,12 @@ ExcelRange*const ExcelCell::GetParent()const{//Getter on parent pointer
 	return parent;
 }
 
-ExcelCell::~ExcelCell(){	
+ExcelCell::~ExcelCell(){
 }
 
 ExcelCell::ExcelCell(ExcelRange &parent,VARIANT appObj){//Classic constructor
 	this->AppObj = appObj;
-	this->parent = &parent;	
+	this->parent = &parent;
 }
 
 ExcelCell::ExcelCell(VARIANT appObj){//Constructor if parent not important (Some ExcelSheet function directly return cells without range setted)
@@ -433,8 +433,19 @@ ExcelCell::ExcelCell(VARIANT appObj){//Constructor if parent not important (Some
 	Here we must add every method a cell could land 
 */
 Upp::String ExcelCell::Value(){ //Get the Value of the cells
-	return BSTRtoString(GetAttribute("Value").bstrVal);		
+	if (GetAttribute("Value").vt == VT_BSTR ) {
+		Cout() << "Len STRING: " << SysStringLen(GetAttribute("Value").bstrVal) << '\n';
+		return BSTRtoString(GetAttribute("Value").bstrVal);
+	} else if(GetAttribute("Value").vt == VT_R8) {
+		return String(std::to_string(GetAttribute("Value").dblVal));
+	} else {
+		throw OleException(2,"UNKNOWN CELL.VALUE VARTYPE: " + String(std::to_string(GetAttribute("Value").vt)), 0);
+	}
 }
+
+/*Upp::String ExcelCell::ValueInt() {
+	return String(std::to_string(GetAttribute("Value").lVal));
+}*/
 
 bool ExcelCell::Value(Upp::String value){//Set value of a Cell
 	return SetAttribute("Value",value);
