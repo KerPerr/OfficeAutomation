@@ -68,7 +68,7 @@ bool ExcelApp::Quit() //Close current Excel Application
 				EventListened = false;
 			}
 			this->ExcelIsStarted = false;
-			this->ExecuteMethode("Quit",0);	
+			this->ExecuteMethode("Quit",0);
 			return true;
 		}catch(OleException const& exception){
 			throw;
@@ -251,11 +251,11 @@ ExcelSheet ExcelWorkbook::AddSheet(){ //Create new Sheet with default Name
 
 ExcelSheet ExcelWorkbook::AddSheet(Upp::String sheetName){ //Create new Sheet with defined name 
 	if(this->isOpenned){
-		try{			
+		try {
 			this->sheets.Add(ExcelSheet(*this,GetAttribute(GetAttribute("Sheets"),"Add")));
 			this->sheets[this->sheets.GetCount()-1].SetName(sheetName);
 			return this->sheets[this->sheets.GetCount()-1];
-		}catch(OleException const& exception){
+		} catch(OleException const& exception) {
 			throw;
 		}
 		return ExcelSheet();
@@ -433,19 +433,17 @@ ExcelCell::ExcelCell(VARIANT appObj){//Constructor if parent not important (Some
 	Here we must add every method a cell could land 
 */
 Upp::String ExcelCell::Value(){ //Get the Value of the cells
-	if (GetAttribute("Value").vt == VT_BSTR ) {
-		Cout() << "Len STRING: " << SysStringLen(GetAttribute("Value").bstrVal) << '\n';
-		return BSTRtoString(GetAttribute("Value").bstrVal);
-	} else if(GetAttribute("Value").vt == VT_R8) {
-		return String(std::to_string(GetAttribute("Value").dblVal));
-	} else {
-		throw OleException(2,"UNKNOWN CELL.VALUE VARTYPE: " + String(std::to_string(GetAttribute("Value").vt)), 0);
+	switch(GetAttribute("Value").vt) {
+		case VT_BSTR:
+			return BSTRtoString(GetAttribute("Value").bstrVal);
+			break;
+		case VT_R8:
+			return StringWOZ(String(std::to_string(GetAttribute("Value").dblVal)));
+			break;
+		default:
+			throw OleException(2,"UNKNOWN CELL.VALUE VARTYPE: " + String(std::to_string(GetAttribute("Value").vt)), 0);
 	}
 }
-
-/*Upp::String ExcelCell::ValueInt() {
-	return String(std::to_string(GetAttribute("Value").lVal));
-}*/
 
 bool ExcelCell::Value(Upp::String value){//Set value of a Cell
 	return SetAttribute("Value",value);
@@ -455,8 +453,3 @@ bool ExcelCell::Value(int value){//Set value of Cells
 	return SetAttribute("Value",value);
 }
 /************************************************************************************************************************/
-
-
-
-
-

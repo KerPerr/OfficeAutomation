@@ -671,8 +671,8 @@ VARIANT Ole::GetAttribute(IDispatch* disp,Upp::WString attributeName,int cArgs..
 
 int Ole::ColStrToInt(Upp::String target){
 	int resultat= 0;
-	for(int i = 0; i < target.GetCount(); i++){	
-		if((int)toupper(target[i]) >64 && 	(int)toupper(target[i]) < 91){
+	for(int i = 0; i < target.GetCount(); i++){
+		if((int)toupper(target[i]) >64 && (int)toupper(target[i]) < 91){
 			if (i>0) {
 				resultat+= 26 *((int)toupper(target[i]) -64);
 			}
@@ -689,11 +689,16 @@ int Ole::ExtractRow(Upp::String target)
 {
 	char myRow[target.GetCount()];
 	int iterator = 0;
-	for(int i = 0; i < target.GetCount(); i++){	
+	for(int i = 0; i < target.GetCount(); i++) {
 		if( int(target[i]) >47 && int(target[i]) < 58){
 			myRow[iterator] = target[i];
 			iterator++;
 		}
 	}
 	return atoi(myRow);
+}
+
+Upp::String Ole::StringWOZ(Upp::String str) {
+	str.Trim(str.Find('.'));
+	return str;
 }
