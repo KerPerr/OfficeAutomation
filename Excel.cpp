@@ -161,6 +161,11 @@ const Vector<ExcelSheet>& ExcelWorkbook::GetVector()const{
 	return this->sheets;
 }
 
+const bool ExcelWorkbook::GetOpen()const
+{
+	return this->isOpenned;
+}
+
 ExcelWorkbook::ExcelWorkbook(){//Classic constructor
 }
 
@@ -178,6 +183,15 @@ ExcelWorkbook::ExcelWorkbook(ExcelApp& myApp, VARIANT appObj){//Basic constructo
 	this->AppObj = appObj;
 	this->parent = &myApp;
 	this->isOpenned = true;
+}
+
+ExcelWorkbook& ExcelWorkbook::operator=(const ExcelWorkbook &wb)
+{
+	this->AppObj = wb.AppObj;
+	this->parent = wb.GetParent();
+	this->isOpenned = true;
+	this->sheets = Vector<ExcelSheet>(wb.GetVector(),wb.GetVector().GetCount());
+	return *this;
 }
 
 bool ExcelWorkbook::Save(){ //Save current workbook
@@ -275,7 +289,7 @@ ExcelWorkbook*const ExcelSheet::GetParent()const{//Getter on parent pointer
 	return parent;
 }
 
-ExcelSheet::ExcelSheet(){//Classic constructor	
+ExcelSheet::ExcelSheet(){//Classic constructor
 }
 
 ExcelSheet::~ExcelSheet(){//Classic desctructor
@@ -283,7 +297,14 @@ ExcelSheet::~ExcelSheet(){//Classic desctructor
 
 ExcelSheet::ExcelSheet(ExcelWorkbook& parent, VARIANT appObj){//Classic constructor
 	this->AppObj = appObj;
-	this->parent = &parent;	
+	this->parent = &parent;
+}
+
+ExcelSheet& ExcelSheet::operator=(const ExcelSheet &ws)
+{
+	this->AppObj = ws.AppObj;
+	this->parent = ws.GetParent();
+	return *this;
 }
 
 bool ExcelSheet::SetName(Upp::String sheetName){//Redefine name of sheet
@@ -327,7 +348,7 @@ ExcelRange ExcelSheet::GetCurrentRegion(){//Return ExcelRange that's represente 
 ExcelCell ExcelSheet::Cells(int ligne, int colonne){//Return a Cells
 	char range[50];
 	IndToStr(ligne,colonne,range);
-	return ExcelCell(GetAttribute(GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"Cells",2, AllocateInt(colonne),AllocateInt(ligne)));; 
+	return ExcelCell(GetAttribute(GetAttribute(GetAttribute("Range",1,AllocateString(L"A1:A1")),"CurrentRegion"),"Cells",2,  AllocateInt(colonne),AllocateInt(ligne)));
 }
 /************************************************************************************************************************/
 ExcelSheet*const ExcelRange::GetParent()const{//Getter on parent pointer
