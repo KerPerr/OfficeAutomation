@@ -17,7 +17,7 @@ public:
 	void UpdateHTMLDocPtr();
 	void WaitUntilNotBusy();
 	void WaitUntilReady();
-
+private:
 	bool Search();
 	bool Search(Upp::WString url);
 	
