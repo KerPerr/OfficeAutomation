@@ -94,11 +94,12 @@ bool IExplorer::Search(Upp::WString url)
 
 Upp::String IExplorer::GetHtml(){
 	UpdateHTMLDocPtr(); //c'est une phylosophie
-		 
+	BSTR    bstr;
     IHTMLElement *lpBodyElm;
-    html->get_html(&lpBodyElm);
-    BSTR    bstr;
+    html->get_body(&lpBodyElm);
+    lpBodyElm->get_parentElement(&lpBodyElm);
     lpBodyElm->get_outerHTML(&bstr);
+    lpBodyElm->Release();
     return BSTRtoString(bstr);
 }
 
