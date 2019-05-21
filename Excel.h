@@ -28,10 +28,10 @@ typedef ExcelRange Range;
 typedef ExcelCell Cell;
 
 class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
-	private: 
+	private:
 		bool ExcelIsStarted; //Bool to know if we started Excel
 		Upp::Vector<ExcelWorkbook> workbooks; //Vector of every workbook
- 	public:
+	public:
 		ExcelApp(); //Initialise COM
 		~ExcelApp(); //Unitialise COM
 		
@@ -40,9 +40,9 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		bool Quit(); //Close current Excel Application
 		
 		bool FindApplication(bool startEventListener = false); //Find First current Excel Application openned
-		bool SetVisible(bool set); //Set or not the application visible 
+		bool SetVisible(bool set); //Set or not the application visible
 		
-		ExcelWorkbook Workbooks(int index); //Allow to retrieve workbook by is index 
+		ExcelWorkbook Workbooks(int index); //Allow to retrieve workbook by is index
 		ExcelWorkbook Workbooks(Upp::String name); //Allow to retrieve workbook by is name
 		
 		ExcelWorkbook NewWorkbook(); //Create new Workbook and add it to actual excel Running method
@@ -60,35 +60,38 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 	public:
 		ExcelApp*const GetParent()const; //Getter on parent pointer
 		const Upp::Vector<ExcelSheet>& GetVector()const; //Return vector
+		const bool GetOpen()const;
 		
 		ExcelWorkbook(); //Classic constructor
 		~ExcelWorkbook();//Classic destructor
 		ExcelWorkbook(const ExcelWorkbook&); //Copy constructor.
 		ExcelWorkbook& operator=(ExcelWorkbook&&) = default; //moveable operator
 		ExcelWorkbook(ExcelApp &parent,VARIANT AppObj); //Constructor basic
+		ExcelWorkbook& operator=(const ExcelWorkbook &wb);
 		
 		bool Save(); //Save current workbook
 		bool SaveAs(Upp::String filePath); //Save current workbook at filePath
 		bool Close(); //Close current workbook
 		bool isReadOnly(); //Return true if the workbook is readOnly
 		
-		ExcelSheet Sheets(int index);//Allow to retrieve worksheet by is index 
+		ExcelSheet Sheets(int index);//Allow to retrieve worksheet by is index
 		ExcelSheet Sheets(Upp::String name);//Allow to retrieve worksheet by is name
 		ExcelSheet AddSheet(); //Create new Sheet with default Name
-		ExcelSheet AddSheet(Upp::String sheetName); //Create new Sheet with defined name 
+		ExcelSheet AddSheet(Upp::String sheetName); //Create new Sheet with defined name
 		
-		bool ResolveSheet(); //Function that calculate all the sheet on openned workbook	
+		bool ResolveSheet(); //Function that calculate all the sheet on openned workbook
 };
 
 class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 	private:
-		ExcelWorkbook* parent =NULL;//Pointer to excelworkbook 
+		ExcelWorkbook* parent =NULL;//Pointer to excelworkbook
 	public:
 		ExcelWorkbook*const GetParent()const; //Getter on parent pointer
 		
 		ExcelSheet(); //Classic constructor
 		~ExcelSheet(); //Classic desctructor
 		ExcelSheet(ExcelWorkbook &parent,VARIANT AppObj); //Classic constructor
+		ExcelSheet& operator=(const ExcelSheet &ws);
 		
 		bool SetName(Upp::String sheetName); //Redefine name of sheet
 		int GetLastRow(Upp::String Colonne); //Retrieve last row of a colonne
@@ -100,7 +103,7 @@ class ExcelSheet : public Ole, public Upp::Moveable<ExcelSheet>{
 		ExcelCell Cells(int ligne, int colonne); //Return a Cells
 };
 
-class ExcelRange : public Ole { 
+class ExcelRange : public Ole {
 	private:
 		ExcelSheet* parent=NULL; //Pointer to excelWorkbook
 		Upp::String range; //range of the object
@@ -109,9 +112,9 @@ class ExcelRange : public Ole {
 		
 		ExcelRange();
 		~ExcelRange();
-		ExcelRange(ExcelSheet &parent,VARIANT appObj); //allow to create ExcelRange on current Variant 
-		ExcelRange(ExcelSheet &parent,VARIANT appObj,Upp::String actualRange); //This constructor allow user to pass the range used to get this object. 
-																			   //It's very important if you want to be able tu use every function that 
+		ExcelRange(ExcelSheet &parent,VARIANT appObj); //allow to create ExcelRange on current Variant
+		ExcelRange(ExcelSheet &parent,VARIANT appObj,Upp::String actualRange); //This constructor allow user to pass the range used to get this object.
+																			   //It's very important if you want to be able to use every function that
 																			   //do job on vector or return vector of Cells
 																			   
 		Upp::String GetTheRange(); //Return the range used to get the Item, it can be empty
@@ -132,14 +135,14 @@ class ExcelRange : public Ole {
 
 class ExcelCell : public Ole , public Upp::Moveable<ExcelCell> {
 	private:
-		ExcelRange* parent= NULL; //pointer to the range 
-	public: 
+		ExcelRange* parent= NULL; //pointer to the range
+	public:
 		ExcelRange*const GetParent()const; //Getter on parent pointer
 		~ExcelCell();
 		ExcelCell(ExcelRange &parent,VARIANT appObj); //Classic constructor
 		ExcelCell(VARIANT appObj);//Constructor if parent not important (Some ExcelSheet function directly return cells without range setted)
 		/*
-			Here we must add every method a cell could land 
+			Here we must add every method a cell could land
 		*/
 		Upp::String Value(); //Get the Value of the cells
 		bool Value(Upp::String value);//Set value of Cells

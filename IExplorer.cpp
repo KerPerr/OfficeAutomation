@@ -229,3 +229,4 @@ void IExplorer::UpdateHTMLDocPtr () {
 	if (FAILED(pdisp->QueryInterface(IID_IHTMLDocument2, (void **)&html)))
 		throw OleException (27, "QueryInterface, IID_IHTMLDocument2", 2);
 }
+
