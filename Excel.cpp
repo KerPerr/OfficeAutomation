@@ -342,13 +342,13 @@ ExcelRange::~ExcelRange(){
 
 ExcelRange::ExcelRange(ExcelSheet &parent,VARIANT appObj){//allow to create ExcelRange on current Variant 
 	this->AppObj = appObj;
-	this->parent = &parent;	
-} 
+	this->parent = &parent;
+}
 																	   
 ExcelRange::ExcelRange(ExcelSheet &parent,VARIANT appObj,Upp::String range){//This constructor allow user to pass the range used to get this object. 
 	this->AppObj = appObj;													//It's very important if you want to be able tu use every function that 
 	this->parent = &parent;													//do job on vector or return vector of Cells
-	this->range = range;	
+	this->range = range;
 }
 														   
 Upp::String ExcelRange::GetTheRange(){//Return the range used to get the Item, it can be empty
@@ -379,7 +379,7 @@ Upp::Vector<ExcelCell> ExcelRange::Value(){//Return every  Cells on a Vector of 
 				for(int l = lDebut; l <= lFin; l++){
 					allTheCells.Add(ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(c),AllocateInt(l))));
 				}
-			}	
+			}
 		}
 		else
 		{
@@ -396,7 +396,7 @@ bool ExcelRange::Value(Upp::String value){ //set this value to every cells of th
 	if (!this->GetTheRange().GetCount() < 1){
 		Upp::Vector<ExcelCell> myVector = this->Value();
 		for(int i = 0; i < myVector.GetCount(); i++){
-			myVector[i].Value(value);	
+			myVector[i].Value(value);
 		}
 		return true;
 	}
@@ -407,9 +407,9 @@ bool ExcelRange::Value(int value){ //set this value to every cells of the range
 	if (!this->GetTheRange().GetCount() < 1){
 		Upp::Vector<ExcelCell> myVector = this->Value();
 		for(int i = 0; i < myVector.GetCount(); i++){
-			myVector[i].Value(value);	
+			myVector[i].Value(value);
 		}
-		return true;	
+		return true;
 	}
 	return false;
 }
@@ -434,12 +434,22 @@ ExcelCell::ExcelCell(VARIANT appObj){//Constructor if parent not important (Some
 */
 Upp::String ExcelCell::Value(){ //Get the Value of the cells
 	switch(GetAttribute("Value").vt) {
-		case VT_BSTR:
+		case VT_BSTR: {
 			return BSTRtoString(GetAttribute("Value").bstrVal);
-			break;
-		case VT_R8:
+		}
+		case VT_R8: {
 			return StringWOZ(String(std::to_string(GetAttribute("Value").dblVal)));
-			break;
+		}
+		case VT_DATE: {
+			BSTR variant_date_string;
+			if (FAILED(VarBstrFromDate(GetAttribute("Value").date, 0, 0, &variant_date_string)))
+			    Cout() <<"Error"<<"\n";
+			String madate = BSTRtoString(variant_date_string);
+			return madate;
+		}
+		case VT_EMPTY : {
+			return "";
+		}
 		default:
 			throw OleException(2,"UNKNOWN CELL.VALUE VARTYPE: " + String(std::to_string(GetAttribute("Value").vt)), 0);
 	}
