@@ -80,7 +80,6 @@ bool IExplorer::Search(Upp::WString url)
 				Upp::WString n(name);
 				if (n.Find(url) == -1) {
 					pBrowser2->Release();
-					return false;
 				} else {
 					this->isStarted = true;
 					this->browser = pBrowser2;

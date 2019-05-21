@@ -9,7 +9,7 @@
 class IExplorer;
 
 class IExplorer : public Ole {
-private:
+public:
 	IWebBrowser2* browser;
 	IHTMLDocument2 *html;
 	bool isStarted;
@@ -17,7 +17,7 @@ private:
 	void UpdateHTMLDocPtr();
 	void WaitUntilNotBusy();
 	void WaitUntilReady();
-public:
+
 	bool Search();
 	bool Search(Upp::WString url);
 	
