@@ -92,6 +92,16 @@ bool IExplorer::Search(Upp::WString url)
 	return false;
 }
 
+Upp::String IExplorer::GetHtml(){
+	UpdateHTMLDocPtr(); //c'est une phylosophie
+		 
+    IHTMLElement *lpBodyElm;
+    html->get_html(&lpBodyElm);
+    BSTR    bstr;
+    lpBodyElm->get_outerHTML(&bstr);
+    return BSTRtoString(bstr);
+}
+
 bool IExplorer::Stop()
 {
 	if(SUCCEEDED(browser->Stop()))

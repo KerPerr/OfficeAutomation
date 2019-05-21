@@ -39,7 +39,7 @@ private:
 	Upp::String GetURL();
 	Upp::String GetCookie();
 	Upp::String FindTitle();
-	
+	Upp::String GetHtml();
 	typedef IExplorer CLASSNAME;
 	IExplorer();
 	~IExplorer();
