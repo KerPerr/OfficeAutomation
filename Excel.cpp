@@ -51,8 +51,13 @@ bool ExcelApp::Start(bool startEventListener ) //Start new Excel Application
 
 bool ExcelApp::FindOrStart(bool startEventListener ){//Find running Excel or Start new One
 	if(!this->ExcelIsStarted){
-		this->AppObj = this->FindApp(WS_ExcelApp,startEventListener);
-		if( this->AppObj.intVal != -1){
+		this->AppObj = this->FindApp(WS_ExcelApp, startEventListener);
+		if( this->AppObj.intVal != -1) {
+			try {
+				SetAttribute("EditDirectlyInCell", 0);
+			} catch (OleException const& exception) {
+				throw;
+			}
 			ResolveWorkbook();
 			this->ExcelIsStarted=true;
 			return true;
@@ -92,7 +97,7 @@ bool ExcelApp::FindApplication(bool startEventListener){ //Find First current Ex
 	return false;
 }
 	
-bool ExcelApp::SetVisible(bool set)//Set or not the application visible 
+bool ExcelApp::SetVisible(bool set)//Set or not the application visible
 {
 	if(this->ExcelIsStarted){
 		try{
@@ -114,7 +119,7 @@ ExcelWorkbook ExcelApp::NewWorkbook(){ //Create new Workbook and add it to actua
 }
 
 ExcelWorkbook ExcelApp::OpenWorkbook(Upp::String name){//Find and Open Workbook by FilePath
-  	if( !FileExists(name.ToStd().c_str())) {
+	if( !FileExists(name.ToStd().c_str())) {
       return ExcelWorkbook();
     }
     workbooks.Add(ExcelWorkbook(*this,ExecuteMethode(GetAttribute(L"Workbooks"),L"Open",1,AllocateString(name)))).ResolveSheet();
@@ -169,7 +174,7 @@ bool ExcelApp::RemoveAWorkbookFromVector(ExcelWorkbook* wb){// remove workbook f
 }
 
 bool ExcelApp::ResolveWorkbook(){//Function that calculate all the workbook on openned Excel
-	int nbrworkbook = this->GetAttribute( this->GetAttribute("Workbooks"),"Count").intVal;
+	int nbrworkbook = this->GetAttribute(this->GetAttribute("Workbooks"), "Count").intVal;
 	for(int i = 0; i < nbrworkbook; i++){
 		workbooks.Add(ExcelWorkbook(*this, this->GetAttribute("Workbooks",1,AllocateInt(i +1))));
 	}
