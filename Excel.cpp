@@ -40,6 +40,7 @@ bool ExcelApp::Start(bool startEventListener ) //Start new Excel Application
 	if(!this->ExcelIsStarted){
 		this->AppObj = this->StartApp(WS_ExcelApp, startEventListener);
 		if( this->AppObj.intVal != -1){
+			ResolveWorkbook();
 			this->ExcelIsStarted=true;
 			return true;
 		}
@@ -52,6 +53,7 @@ bool ExcelApp::FindOrStart(bool startEventListener ){//Find running Excel or Sta
 	if(!this->ExcelIsStarted){
 		this->AppObj = this->FindApp(WS_ExcelApp,startEventListener);
 		if( this->AppObj.intVal != -1){
+			ResolveWorkbook();
 			this->ExcelIsStarted=true;
 			return true;
 		}
@@ -83,6 +85,7 @@ bool ExcelApp::FindApplication(bool startEventListener){ //Find First current Ex
 		this->AppObj = this->FindApp(WS_ExcelApp,startEventListener,true);
 		if( this->AppObj.intVal != -1){
 			this->ExcelIsStarted=true;
+			ResolveWorkbook();
 			return true;
 		}
 	}
@@ -120,7 +123,9 @@ ExcelWorkbook ExcelApp::OpenWorkbook(Upp::String name){//Find and Open Workbook 
 
 ExcelWorkbook ExcelApp::FindOrOpenWorkBook(Upp::String name){//Look at current openned workbook and open it if not open
 	for(Workbook &wb : workbooks){
-		if(name.Compare(wb.Path()) == 0){
+		String wbName = name.Right(name.GetCount() - (name.ReverseFind("\\") +1));
+		if(wbName.Compare(wb.Name()) == 0){
+			wb.ResolveSheet();
 			return wb;
 		}
 	}
@@ -161,6 +166,14 @@ bool ExcelApp::RemoveAWorkbookFromVector(ExcelWorkbook* wb){// remove workbook f
 	}
 	if(trouver) workbooks.Remove(i);
 	return trouver;
+}
+
+bool ExcelApp::ResolveWorkbook(){//Function that calculate all the workbook on openned Excel
+	int nbrworkbook = this->GetAttribute( this->GetAttribute("Workbooks"),"Count").intVal;
+	for(int i = 0; i < nbrworkbook; i++){
+		workbooks.Add(ExcelWorkbook(*this, this->GetAttribute("Workbooks",1,AllocateInt(i +1))));
+	}
+	return true;
 }
 		
 /************************************************************************************************************************/
@@ -243,7 +256,7 @@ bool ExcelWorkbook::Close(){//Close current workbook
 Upp::String ExcelWorkbook::Name(){ //Return wb name
 	if(this->isOpenned){
 		try{
-			return BSTRtoString(ExecuteMethode("Name",0).bstrVal);
+			return BSTRtoString(GetAttribute("Name").bstrVal);
 		}catch(OleException const& exception){
 			throw;
 		}
@@ -254,7 +267,7 @@ Upp::String ExcelWorkbook::Name(){ //Return wb name
 Upp::String ExcelWorkbook::Path(){ //Return wb path
 	if(this->isOpenned){
 		try{
-			return BSTRtoString(ExecuteMethode("Path",0).bstrVal);
+			return BSTRtoString(GetAttribute("Path").bstrVal) +"\\"+ Name();
 		}catch(OleException const& exception){
 			throw;
 		}

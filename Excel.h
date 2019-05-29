@@ -51,6 +51,7 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		
 		int GetNumberOfWorkbook(); //Return number of workbook currently openned on this excel App
 		bool RemoveAWorkbookFromVector(ExcelWorkbook* wb); // remove workbook from vector
+		bool ResolveWorkbook();
 };
 
 class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
