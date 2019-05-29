@@ -47,7 +47,8 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		
 		ExcelWorkbook NewWorkbook(); //Create new Workbook and add it to actual excel Running method
 		ExcelWorkbook OpenWorkbook(Upp::String FilePath); //Find and Open Workbook by FilePath
-	
+		ExcelWorkbook FindOrOpenWorkBook(Upp::String filePath); //Look at current openned workbook and open it if not open
+		
 		int GetNumberOfWorkbook(); //Return number of workbook currently openned on this excel App
 		bool RemoveAWorkbookFromVector(ExcelWorkbook* wb); // remove workbook from vector
 };
@@ -73,6 +74,8 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 		bool SaveAs(Upp::String filePath); //Save current workbook at filePath
 		bool Close(); //Close current workbook
 		bool isReadOnly(); //Return true if the workbook is readOnly
+		Upp::String Name(); //Return wb name
+		Upp::Stirng Path(); //Return wb path
 		
 		ExcelSheet Sheets(int index);//Allow to retrieve worksheet by is index
 		ExcelSheet Sheets(Upp::String name);//Allow to retrieve worksheet by is name

@@ -117,6 +117,15 @@ ExcelWorkbook ExcelApp::OpenWorkbook(Upp::String name){//Find and Open Workbook 
     return workbooks[workbooks.GetCount()-1];
 }
 
+ExcelWorkbook ExcelApp::FindOrOpenWorkBook(Upp::String name){//Look at current openned workbook and open it if not open
+	for(Workbook &wb : workbooks){
+		if(name.Compare(wb.Path()) == 0){
+			return wb;
+		}
+	}
+	return this->OpenWorkbook(name);
+}
+
 ExcelWorkbook ExcelApp::Workbooks(int index){//Allow to retrieve workbook by is index 
 	if(this->ExcelIsStarted && workbooks.GetCount() > index){
 		return workbooks[index];
@@ -229,6 +238,27 @@ bool ExcelWorkbook::Close(){//Close current workbook
 		}
 	}
 	return false;
+}
+Upp::String ExcelWorkbook::Name(){ //Return wb name
+	if(this->isOpenned){
+		try{
+			return BSTRtoString(ExecuteMethode("Name",0).bstrVal);
+		}catch(OleException const& exception){
+			throw;
+		}
+	}
+	return "";
+}
+
+Upp::Stirng ExcelWorkbook::Path(){ //Return wb path
+	if(this->isOpenned){
+		try{
+			return BSTRtoString(ExecuteMethode("Path",0).bstrVal);
+		}catch(OleException const& exception){
+			throw;
+		}
+	}
+	return "";
 }
 
 bool ExcelWorkbook::isReadOnly(){//Return true if the workbook is readOnly
