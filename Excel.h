@@ -75,7 +75,7 @@ class ExcelWorkbook : public Ole, public Upp::Moveable<ExcelWorkbook>{
 		bool Close(); //Close current workbook
 		bool isReadOnly(); //Return true if the workbook is readOnly
 		Upp::String Name(); //Return wb name
-		Upp::Stirng Path(); //Return wb path
+		Upp::String Path(); //Return wb path
 		
 		ExcelSheet Sheets(int index);//Allow to retrieve worksheet by is index
 		ExcelSheet Sheets(Upp::String name);//Allow to retrieve worksheet by is name

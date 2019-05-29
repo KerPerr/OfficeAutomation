@@ -189,7 +189,7 @@ template<class Type> COfficeEventHandler(Type* instance){
 	}
 		return m_cRef;
 	}
-	
+	/*
 	STDMETHOD(QueryInterface)(REFIID riid , void ** ppvObj){
 		if (riid == IID_IUnknown || riid == IID_IDispatch || riid == IID_IApplicationEvents2Excel || riid == IID_IApplicationEvents2Word){
 		    *ppvObj = static_cast<IApplicationEvents2*>(this);
@@ -209,7 +209,7 @@ template<class Type> COfficeEventHandler(Type* instance){
 		}
 		static_cast<IUnknown*>(*ppvObj)->AddRef();
 		return S_OK;
-	}
+	}*/
 	
 	STDMETHOD(GetTypeInfoCount)(UINT* pctinfo){
 		return E_NOTIMPL;

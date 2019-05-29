@@ -31,6 +31,7 @@ ExcelApp::ExcelApp(){//Initialise COM
 
 ExcelApp::~ExcelApp(){//Unitialise COM
 //	~Ole();
+//	VariantClear(&this->AppObj);
 	CoUninitialize();
 }
 
@@ -250,7 +251,7 @@ Upp::String ExcelWorkbook::Name(){ //Return wb name
 	return "";
 }
 
-Upp::Stirng ExcelWorkbook::Path(){ //Return wb path
+Upp::String ExcelWorkbook::Path(){ //Return wb path
 	if(this->isOpenned){
 		try{
 			return BSTRtoString(ExecuteMethode("Path",0).bstrVal);

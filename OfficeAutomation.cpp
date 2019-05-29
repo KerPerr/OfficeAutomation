@@ -117,14 +117,14 @@ void Ole::IndToStr(int row,int col,char* strResult) {
     }
 }
 void Ole::InitSinkCommunication(const Upp::WString appName){
-		EventListened = true;
+	/*	EventListened = true;
 		eventListener = new Upp::Thread;
 
 		eventListener->Run([this,appName](){
 			CoInitialize(NULL);
 			IID id;  
 			HRESULT hr;
-		    COfficeEventHandler sink(this);
+		    //COfficeEventHandler sink(this);
 			IUnknown* iu;
 			IConnectionPoint* pConnPoint;
 			IConnectionPointContainer* pConnPntCont;
@@ -151,7 +151,7 @@ void Ole::InitSinkCommunication(const Upp::WString appName){
 				   myConPoint[e]->GetConnectionInterface(&theID);
 				
 				}
-			}*/
+			}
 			
 			hr = pConnPntCont->FindConnectionPoint( id, &pConnPoint );
 			hr = sink.QueryInterface( IID_IUnknown, (void FAR* FAR*)&iu);
@@ -164,7 +164,7 @@ void Ole::InitSinkCommunication(const Upp::WString appName){
 			}	
 			pConnPoint->Unadvise( sink.m_dwEventCookie );
 			CoUninitialize();
-		});
+		});*/
 }
 
 const Upp::WString Ole::CLSIDbyName(const Upp::WString appName) {
