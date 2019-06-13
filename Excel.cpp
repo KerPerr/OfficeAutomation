@@ -49,6 +49,25 @@ bool ExcelApp::Start(bool startEventListener ) //Start new Excel Application
 	return false;
 }
 
+bool ExcelApp::Find(bool startEventListener){
+	if(!this->ExcelIsStarted){
+		this->AppObj = this->FindApp(WS_ExcelApp, startEventListener);
+		if( this->AppObj.intVal != -1) {
+			try {
+				SetAttribute("EditDirectlyInCell", 0);
+			} catch (OleException const& exception) {
+				throw;
+			}
+			ResolveWorkbook();
+			this->ExcelIsStarted=true;
+			return true;
+		}else{
+			return false;
+		}
+	}
+	return false;
+}
+
 bool ExcelApp::FindOrStart(bool startEventListener ){//Find running Excel or Start new One
 	if(!this->ExcelIsStarted){
 		this->AppObj = this->FindApp(WS_ExcelApp, startEventListener);
@@ -61,9 +80,35 @@ bool ExcelApp::FindOrStart(bool startEventListener ){//Find running Excel or Sta
 			ResolveWorkbook();
 			this->ExcelIsStarted=true;
 			return true;
+		}else{
+			return Start(startEventListener);	
 		}
 	}
 	return false;
+}
+
+bool ExcelApp::FindOrStartPredictedWorkbook(Upp::String name,bool startEventListener){
+	Cout() <<"FindOrStartPredictedWorkbook "<<"\n";
+	if(Find(startEventListener)){
+		Cout() <<"Excel trouvé, Verification des workbook "<<"\n";
+		String wbName = "";
+		for(Workbook &w : workbooks){
+			wbName = name.Right(name.GetCount() - (name.ReverseFind("\\") +1));
+			if (w.Name().Compare(name)==0){
+				w.ResolveSheet();
+				Cout() <<"Workbook trouvé"<<"\n";
+				return true;
+			}
+		}
+		Cout() <<"Workbook introuvable, ouverture d'un nouveau excel"<<"\n";
+		this->ExcelIsStarted=false;
+		return Start(startEventListener);
+		Cout() <<"nouveau excel ouvert"<<"\n";	
+		return true;
+	}else{
+		Cout() <<"Aucun excel, ouverture d'un nouveau"<<"\n";
+		return Start(startEventListener);	
+	}
 }
 
 bool ExcelApp::Quit() //Close current Excel Application
@@ -177,6 +222,9 @@ bool ExcelApp::ResolveWorkbook(){//Function that calculate all the workbook on o
 	int nbrworkbook = this->GetAttribute(this->GetAttribute("Workbooks"), "Count").intVal;
 	for(int i = 0; i < nbrworkbook; i++){
 		workbooks.Add(ExcelWorkbook(*this, this->GetAttribute("Workbooks",1,AllocateInt(i +1))));
+	}
+	for(Workbook &w:workbooks){
+		w.ResolveSheet();
 	}
 	return true;
 }

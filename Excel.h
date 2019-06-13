@@ -36,7 +36,9 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		~ExcelApp(); //Unitialise COM
 		
 		bool Start(bool startEventListener = false); //Start new Excel Application
+		bool Find(bool startEventListener=false); //find first oppened excel application
 		bool FindOrStart(bool startEventListener = false); //Find running Excel or Start new One
+		bool FindOrStartPredictedWorkbook(Upp::String name,bool startEventListener = false); //Find running Excel with current wb or start new Excel
 		bool Quit(); //Close current Excel Application
 		
 		bool FindApplication(bool startEventListener = false); //Find First current Excel Application openned

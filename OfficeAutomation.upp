@@ -1,0 +1,21 @@
+description "\377BI226,170,0";
+
+uses
+	Core;
+
+file
+	Excel.h,
+	Excel.cpp,
+	Outlook.h,
+	Outlook.cpp,
+	Word.h,
+	Word.cpp,
+	IExplorer.h,
+	IExplorer.cpp,
+	OfficeAutomation.h,
+	OfficeAutomation.cpp,
+	src.tpp;
+
+mainconfig
+	"" = "";
+
