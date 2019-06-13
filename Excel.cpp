@@ -31,7 +31,7 @@ ExcelApp::ExcelApp(){//Initialise COM
 
 ExcelApp::~ExcelApp(){//Unitialise COM
 //	~Ole();
-//	VariantClear(&this->AppObj);
+	VariantClear(&this->AppObj);
 	CoUninitialize();
 }
 
@@ -51,7 +51,7 @@ bool ExcelApp::Start(bool startEventListener ) //Start new Excel Application
 
 bool ExcelApp::Find(bool startEventListener){
 	if(!this->ExcelIsStarted){
-		this->AppObj = this->FindApp(WS_ExcelApp, startEventListener);
+		this->AppObj = this->FindApp(WS_ExcelApp, startEventListener,true);
 		if( this->AppObj.intVal != -1) {
 			try {
 				SetAttribute("EditDirectlyInCell", 0);
@@ -154,6 +154,18 @@ bool ExcelApp::SetVisible(bool set)//Set or not the application visible
 	}
 	return false;
 }
+
+bool ExcelApp::DisplayAlerts(bool set){
+	if(this->ExcelIsStarted){
+		try{
+			this->SetAttribute("DisplayAlerts",(int)set);
+			return true;
+		}catch(OleException const& exception){
+			throw;
+		}
+	}
+	return false;
+}
 		
 ExcelWorkbook ExcelApp::NewWorkbook(){ //Create new Workbook and add it to actual excel Running method
 	if(this->ExcelIsStarted){
@@ -169,6 +181,16 @@ ExcelWorkbook ExcelApp::OpenWorkbook(Upp::String name){//Find and Open Workbook 
     }
     workbooks.Add(ExcelWorkbook(*this,ExecuteMethode(GetAttribute(L"Workbooks"),L"Open",1,AllocateString(name)))).ResolveSheet();
     return workbooks[workbooks.GetCount()-1];
+}
+
+bool ExcelApp::FindWorkbook(Upp::String name){
+	for(Workbook &wb : workbooks){
+		String wbName = name.Right(name.GetCount() - (name.ReverseFind("\\") +1));
+		if(wbName.Compare(wb.Name()) == 0){
+			return true;
+		}
+	}
+	return false;
 }
 
 ExcelWorkbook ExcelApp::FindOrOpenWorkBook(Upp::String name){//Look at current openned workbook and open it if not open

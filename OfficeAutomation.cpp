@@ -175,6 +175,7 @@ const Upp::WString Ole::CLSIDbyName(const Upp::WString appName) {
 	return WS_CLSID_ExcelApp;
 }
 
+
 VARIANT Ole::FindApp(const Upp::WString appName,bool startEventListener ,bool isFindOnly){
 	CLSID clsApp;
 	VARIANT App = {0};

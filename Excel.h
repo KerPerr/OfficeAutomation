@@ -43,12 +43,14 @@ class ExcelApp : public Ole , public Upp::Moveable<ExcelApp> {
 		
 		bool FindApplication(bool startEventListener = false); //Find First current Excel Application openned
 		bool SetVisible(bool set); //Set or not the application visible
+		bool DisplayAlerts(bool set); //Display or not application Alert
 		
 		ExcelWorkbook Workbooks(int index); //Allow to retrieve workbook by is index
 		ExcelWorkbook Workbooks(Upp::String name); //Allow to retrieve workbook by is name
 		
 		ExcelWorkbook NewWorkbook(); //Create new Workbook and add it to actual excel Running method
 		ExcelWorkbook OpenWorkbook(Upp::String FilePath); //Find and Open Workbook by FilePath
+		bool FindWorkbook(Upp::String FilePath);//Find an opened workbook in excelApp
 		ExcelWorkbook FindOrOpenWorkBook(Upp::String filePath); //Look at current openned workbook and open it if not open
 		
 		int GetNumberOfWorkbook(); //Return number of workbook currently openned on this excel App
