@@ -1,7 +1,7 @@
 #ifndef _OfficeAutomation_Outlook_h_
 #define _OfficeAutomation_Outlook_h_
 #include "OfficeAutomation.h"
-
+using namespace Upp;
 /* 
 Project created 01/18/2019 
 By Clément Hamon Email: hamon.clement@outlook.fr
@@ -16,35 +16,47 @@ Thanks to UPP team
 */
 
 class OutlookApp;//Class represents an  Outlook Application 
-class OutlookSession;//Class represents Outlook Session
+class MailItem;//Class represents Outlook Session
 
 class OutlookApp : public Ole {
 	private: 
 		bool OutlookIsStarted; //Bool to know if we started Excel
-		OutlookSession* session; //session object
 		Upp::Thread myThread;
 	public:
 		OutlookApp(); //Initialise COM
 		~OutlookApp(); //Unitialise COM
 		
-		OutlookSession* GetSession();
+		MailItem CreateMail();
 		
 		bool Start(); //Start new Outlook Application
 		bool FindOrStart(); //Find running Outlook or Start new One
 		bool Quit(); //Close current Outlook Application
 		
 		bool FindApplication(); //Find First current Outlook Application still openned
-		
+
 		bool SetVisible(bool set); //Set or not the application visible 
 };
 
-class OutlookSession : public Ole{
+class MailItem : public Ole{
 	private:
 		OutlookApp* parent; //pointer to OutlookApp	
+		//olTo 
 		
+	
+		
+		//Atachement would come later
 	public:
-		OutlookSession(OutlookApp& parent, VARIANT appObj); 
-		~OutlookSession(); 
+		MailItem(OutlookApp& parent, VARIANT appObj); 
+		~MailItem();
+		bool AddRecever(Upp::String email);
+		//olCC
+		bool AddRecipients(Upp::String email);
+		bool SetSubject(Upp::String subject);
+		bool SetBody(Upp::String body);
+		bool setHighImportance();
+		bool AddItem(String PathToData);
+		bool DisplayMail();
 };
+
 
 #endif
