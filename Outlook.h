@@ -19,7 +19,7 @@ class OutlookApp;//Class represents an  Outlook Application
 class MailItem;//Class represents Outlook Session
 
 class OutlookApp : public Ole {
-	private: 
+	private:
 		bool OutlookIsStarted; //Bool to know if we started Excel
 		Upp::Thread myThread;
 	public:
@@ -34,25 +34,26 @@ class OutlookApp : public Ole {
 		
 		bool FindApplication(); //Find First current Outlook Application still openned
 
-		bool SetVisible(bool set); //Set or not the application visible 
+		bool SetVisible(bool set); //Set or not the application visible
 };
 
 class MailItem : public Ole{
 	private:
-		OutlookApp* parent; //pointer to OutlookApp	
-		//olTo 
+		OutlookApp* parent; //pointer to OutlookApp
+		//olTo
 		
 	
 		
 		//Atachement would come later
 	public:
-		MailItem(OutlookApp& parent, VARIANT appObj); 
+		MailItem(OutlookApp& parent, VARIANT appObj);
 		~MailItem();
 		bool AddRecever(Upp::String email);
 		//olCC
 		bool AddRecipients(Upp::String email);
 		bool SetSubject(Upp::String subject);
 		bool SetBody(Upp::String body);
+		bool SetHTMLBody(Upp::String body);
 		bool setHighImportance();
 		bool AddItem(String PathToData);
 		bool DisplayMail();

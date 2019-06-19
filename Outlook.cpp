@@ -146,9 +146,19 @@ bool MailItem::SetSubject(Upp::String subject){
 	}
 	return false;
 }
+
 bool MailItem::SetBody(Upp::String body){
 	try{
 	    this->SetAttribute("Body",body);
+	}catch(OleException const& exception){
+		throw exception;
+	}
+	return false;
+}
+
+bool MailItem::SetHTMLBody(Upp::String body){
+	try{
+	    this->SetAttribute("HTMLBody",body);
 	}catch(OleException const& exception){
 		throw exception;
 	}
