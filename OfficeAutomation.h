@@ -43,10 +43,12 @@ class Ole {
 		const Upp::WString WS_OutlookApp = L"Outlook.Application"; //MS Outlook
 		const Upp::WString WS_PowerPointApp = L"PowerPoint.Application"; //MS PowerPoint
 		const Upp::WString WS_InternetExplorerApp = L"InternetExplorer.Application"; //MS IE
-		const Upp::WString WS_ProdApp = L"InternetExplorer.Application"; // this one is to use in my context, you'r supposed to never use it :p
+		const Upp::WString WS_TermApp = L"IbmTerminal"; // this one is to use in my context, you'r supposed to never use it :p
+		const Upp::WString WS_ProdApp = L"Extra.System"; // this one is to use in my context, you'r supposed to never use it :p
 		
 		const Upp::WString WS_CLSID_WordApp = L"{000209FE-0000-0000-C000-000000000046}"; //Clsid of Word
 		const Upp::WString WS_CLSID_ExcelApp = L"{00024500-0000-0000-C000-000000000046}"; //Clsid of Excel
+		const Upp::WString WS_CLSID_ProdApp = L"{927A9163-1666-4EBC-9B9A-A39B8B1F4650}";
 		
 		virtual VARIANT StartApp(const Upp::WString appName,bool startEventListener = false); 
 		virtual VARIANT FindApp(const Upp::WString appName,bool startEventListener = false,bool isFindOnly = false);
@@ -61,6 +63,10 @@ class Ole {
 		virtual VARIANT AllocateString(Upp::String arg); //Easy way to allocate some data into variant to use it as arg
 		virtual VARIANT AllocateString(Upp::WString arg);//Easy way to allocate some data into variant to use it as arg
 		virtual VARIANT AllocateInt(int arg);//Easy way to allocate some data into variant to use it as arg
+		virtual VARIANT AllocateShort(short arg);
+		virtual VARIANT AllocateFloat(float arg);
+		virtual VARIANT AllocateDouble(double arg);
+		virtual VARIANT AllocateLong(long arg);
 		
 		const Upp::WString CLSIDbyName(const Upp::WString appName); //Get App name and return CLsid name is he can
 		/****************************************************************************/
@@ -91,6 +97,7 @@ class Ole {
 #include "Word.h"
 #include "Outlook.h"
 #include "IExplorer.h"
+#include "Imsp.h"
 
 class OleException : public std::exception { //classe to managed every OLE exception
 	private:

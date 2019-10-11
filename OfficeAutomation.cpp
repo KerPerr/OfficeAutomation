@@ -189,7 +189,7 @@ VARIANT Ole::FindApp(const Upp::WString appName,bool startEventListener ,bool is
 				if(isFindOnly)
 					App.intVal = -1;
 				else 
-					return this->StartApp(appName,startEventListener);	
+					return this->StartApp(appName,startEventListener);
 			}
 		}else
 		{
@@ -266,6 +266,36 @@ VARIANT Ole::AllocateInt(int myVar){
 	VariantInit(&buffer);
 	buffer.vt= VT_I4;
 	buffer.lVal = myVar;
+	return buffer;
+}
+
+VARIANT Ole::AllocateShort(short myVar){
+	VARIANT buffer = {0};
+	VariantInit(&buffer);
+	buffer.vt= VT_I2;
+	buffer.iVal = myVar;
+	return buffer;
+}
+
+VARIANT Ole::AllocateFloat(float myVar){
+	VARIANT buffer = {0};
+	VariantInit(&buffer);
+	buffer.vt= VT_R4;
+	buffer.fltVal = myVar;
+	return buffer;
+}
+VARIANT Ole::AllocateDouble(double myVar){
+	VARIANT buffer = {0};
+	VariantInit(&buffer);
+	buffer.vt= VT_R8;
+	buffer.dblVal = myVar;
+	return buffer;
+}
+VARIANT Ole::AllocateLong(long myVar){
+	VARIANT buffer = {0};
+	VariantInit(&buffer);
+	buffer.vt= VT_I8;
+	buffer.iVal = myVar;
 	return buffer;
 }
 
