@@ -725,13 +725,7 @@ int Ole::ColStrToInt(Upp::String target){
 	}
 	for(int i = 0; i < target.GetCount(); i++){
 		if((int)toupper(target[i]) >64 && (int)toupper(target[i]) < 91){
-			if(nbLettre > 2){
-				resultat+=pow(26,nbLettre-1)*((int)toupper(target[i]) -64);
-			}else if(nbLettre == 2){
-				resultat+= 26 *((int)toupper(target[i]) -64);
-			}else if(nbLettre == 1){
-				resultat+= ((int)toupper(target[i]) -64);
-			}
+			resultat+=pow(26,nbLettre-1)*((int)toupper(target[i]) -64);
 			nbLettre--;	
 		}
 	}
