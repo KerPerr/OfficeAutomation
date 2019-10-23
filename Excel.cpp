@@ -31,6 +31,9 @@ ExcelApp::ExcelApp(){//Initialise COM
 
 ExcelApp::~ExcelApp(){//Unitialise COM
 //	~Ole();
+	for(ExcelWorkbook& wb : workbooks){
+		wb.Close();	
+	}
 	VariantClear(&this->AppObj);
 	CoUninitialize();
 }
@@ -92,7 +95,7 @@ bool ExcelApp::FindOrStartPredictedWorkbook(Upp::String name,bool startEventList
 	if(Find(startEventListener)){
 		Cout() <<"Excel trouvé, Verification des workbook "<<"\n";
 		String wbName = "";
-		for(Workbook &w : workbooks){
+		for(ExcelWorkbook &w : workbooks){
 			wbName = name.Right(name.GetCount() - (name.ReverseFind("\\") +1));
 			if (w.Name().Compare(name)==0){
 				w.ResolveSheet();
@@ -184,7 +187,7 @@ ExcelWorkbook ExcelApp::OpenWorkbook(Upp::String name){//Find and Open Workbook 
 }
 
 bool ExcelApp::FindWorkbook(Upp::String name){
-	for(Workbook &wb : workbooks){
+	for(ExcelWorkbook &wb : workbooks){
 		String wbName = name.Right(name.GetCount() - (name.ReverseFind("\\") +1));
 		if(wbName.Compare(wb.Name()) == 0){
 			return true;
@@ -194,7 +197,7 @@ bool ExcelApp::FindWorkbook(Upp::String name){
 }
 
 ExcelWorkbook ExcelApp::FindOrOpenWorkBook(Upp::String name){//Look at current openned workbook and open it if not open
-	for(Workbook &wb : workbooks){
+	for(ExcelWorkbook &wb : workbooks){
 		String wbName = name.Right(name.GetCount() - (name.ReverseFind("\\") +1));
 		if(wbName.Compare(wb.Name()) == 0){
 			wb.ResolveSheet();
@@ -245,7 +248,7 @@ bool ExcelApp::ResolveWorkbook(){//Function that calculate all the workbook on o
 	for(int i = 0; i < nbrworkbook; i++){
 		workbooks.Add(ExcelWorkbook(*this, this->GetAttribute("Workbooks",1,AllocateInt(i +1))));
 	}
-	for(Workbook &w:workbooks){
+	for(ExcelWorkbook &w:workbooks){
 		w.ResolveSheet();
 	}
 	return true;

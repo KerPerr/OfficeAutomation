@@ -1,6 +1,10 @@
 #ifndef _OfficeAutomation_Imsp_h_
 #define _OfficeAutomation_Imsp_h_
 
+#include <Core/Core.h>
+
+using namespace Upp;
+
 /* 
 Project created 10/09/2019 
 By Clément Hamon Email: hamon.clement@outlook.fr
@@ -21,7 +25,7 @@ class Imsp : public Ole , public Upp::Moveable<Imsp> {
 		// VARIANT portant le terminal
 		VARIANT terminal;
 		// Thread pour vérifier l'execution d'une macro
-		Thread worker;
+		Upp::Thread worker;
 		// Bool to know if IMSP is started
 		bool IsStarted;
 		String path = "C:\\Users\\Public\\Documents\\Attachmate\\Reflection\\Built-Ins\\Sessions\\Session Reflection PROD.rd3x";
@@ -45,7 +49,11 @@ class Imsp : public Ole , public Upp::Moveable<Imsp> {
 		void SetCmd(String cmd);
 		
 		// Recupère le texte
+		String GetString(int row, int col);
 		String GetString(int row, int col, int len);
+		
+		//void Logon();
+		void StopMacro();
 		
 		Imsp();
 		~Imsp();

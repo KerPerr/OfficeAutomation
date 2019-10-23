@@ -62,10 +62,12 @@ bool Imsp::Start(bool threading)
 						Cout() << "FAILED" << EOL;
 					}
 				}
+				/*
 				if(threading && !worker.IsOpen()) {
 					worker.Run([=] {
 						CoInitialize(NULL);
 						for(int i = 0; i < 100; i++){
+							Cout() << "Looking for a macro" << EOL;
 							if(Thread::IsShutdownThreads())break;
 							String status = BSTRtoString(GetAttribute(frame, L"StatusBarText").bstrVal);
 							if(status.StartsWith("Ex")){
@@ -79,6 +81,7 @@ bool Imsp::Start(bool threading)
 						CoUninitialize();
 					});
 				}
+				*/
 				return true;
 			}
 			return false;
@@ -86,6 +89,16 @@ bool Imsp::Start(bool threading)
 		return false;
 	}
 	return false;
+}
+
+void Imsp::StopMacro()
+{
+	String stt = BSTRtoString(GetAttribute(frame, L"StatusBarText").bstrVal);
+	while(stt.StartsWith("Ex")) {
+		ExecuteMethode(GetAttribute(terminal, L"Macro"), L"StopMacro", 0);
+		stt = BSTRtoString(GetAttribute(frame, L"StatusBarText").bstrVal);
+	}
+	Cout() << "Shutdown Macro" << EOL;
 }
 
 void Imsp::Wait()
@@ -101,6 +114,12 @@ void Imsp::SetText(String text)
 void Imsp::SetCmd(String cmd)
 {
 	ExecuteMethode(GetAttribute("Screen"),L"SendKeys", 1, AllocateString("<"+cmd+">"));
+	Wait();
+}
+
+String Imsp::GetString(int row, int col)
+{
+	return BSTRtoString(ExecuteMethode(GetAttribute("Screen"), L"getString", 2, AllocateInt(col),AllocateInt(row)).bstrVal);
 }
 
 String Imsp::GetString(int row, int col, int len)

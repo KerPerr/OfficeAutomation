@@ -1,0 +1,1 @@
+FN(int, GetLogonInfo,(char* arg1,int* arg2,char* arg3,int* arg4,char* arg5,int* arg6))

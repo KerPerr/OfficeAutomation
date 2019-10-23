@@ -7,7 +7,22 @@
 #define DISP_FREEARGS 0x01
 #define DISP_NOSHOWEXCEPTIONS 0x02
 
+#define DLLFILENAME "C:\\Program Files (x86)\\Attachmate\\Reflection\\AgfSoft.dll"
+#define DLIMODULE   LOGON
+#define DLIHEADER   <OfficeAutomation/logon.dli>
+#include <Core/dli.h>
+
 using namespace Upp;
+
+const int MAX = 255;
+struct LogonInfoRecord{
+	char users[MAX];
+	int lgUser=MAX;
+	char Pswd[MAX];
+	int lgPsdw=MAX;
+	char domaine[MAX];
+	int lgDomaine=MAX;
+};
 
 //This function come from MSDN and have been Change By Clément Hamon
 HRESULT Ole::AutoWrap(int autoType, VARIANT *pvResult, IDispatch *pDisp, LPOLESTR ptName, DISPPARAMS dp)
@@ -713,7 +728,7 @@ int Ole::ColStrToInt(Upp::String target){
 			}
 		}
 	}
-	return resultat;
+	return resultat-1;
 }
 
 int Ole::ExtractRow(Upp::String target)

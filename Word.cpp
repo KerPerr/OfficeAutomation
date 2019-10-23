@@ -76,6 +76,7 @@ WordDocument WordApp::OpenDocument(Upp::String path)
 	} catch (...) {
 		Upp::Cout() << "Error Open Document";
 	}
+
 }
 
 bool WordApp::RemoveDocument(WordDocument wdoc){

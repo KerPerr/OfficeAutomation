@@ -15,6 +15,7 @@ file
 	Imsp.h,
 	Imsp.cpp,
 	OfficeAutomation.h,
+	logon.dli,
 	OfficeAutomation.cpp,
 	src.tpp;
 
