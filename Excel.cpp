@@ -515,11 +515,13 @@ Upp::Vector<ExcelCell> ExcelRange::Value(){//Return every  Cells on a Vector of 
 			Upp::String debut = this->GetTheRange().Left(this->GetTheRange().Find(":"))	;
 			Upp::String fin =  this->GetTheRange().Right(this->GetTheRange().GetCount() - (this->GetTheRange().Find(":")+1));
 			int lDebut = ExtractRow(debut);
+			lDebut--;
 			int lFin = ExtractRow(fin);
 			int cDebut = ColStrToInt(debut);
+			cDebut--;
 			int cFin = ColStrToInt(fin);
-			for (int c = cDebut; c <= cFin; c++){
-				for(int l = lDebut; l <= lFin; l++){
+			for (int c = 1; c <= cFin -cDebut; c++){
+				for(int l = 1; l <= lFin - lDebut; l++){
 					allTheCells.Add(ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(c),AllocateInt(l))));
 				}
 			}
@@ -528,7 +530,7 @@ Upp::Vector<ExcelCell> ExcelRange::Value(){//Return every  Cells on a Vector of 
 		{
 			int ligne = ExtractRow(this->GetTheRange());
 			int colonne = ColStrToInt(this->GetTheRange());
-			allTheCells.Add(ExcelCell(*this,GetAttribute("Cells",2, AllocateInt(ligne),AllocateInt(colonne))));
+			allTheCells.Add(ExcelCell(*this,GetAttribute("Cells",2,AllocateInt(1), AllocateInt(1))));
 		}
 
 	}

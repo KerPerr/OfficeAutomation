@@ -728,7 +728,7 @@ int Ole::ColStrToInt(Upp::String target){
 			}
 		}
 	}
-	return resultat-1;
+	return resultat;
 }
 
 int Ole::ExtractRow(Upp::String target)
